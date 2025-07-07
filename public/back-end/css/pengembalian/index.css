@@ -1,0 +1,54 @@
+.custom-thead {
+    background-color: #6a78fd !important;
+    color: white;
+}
+
+.alert-success {
+    background-color: #d1e7dd;
+    color: #0f5132;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    font-weight: 500;
+    margin-top: 1rem;
+}
+
+.action-cell {
+    white-space: nowrap;
+}
+
+.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+    border-radius: 6px;
+    margin: 0 4px;
+    color: white;
+    transition: 0.3s ease;
+    border: none;
+}
+
+.btn-icon i {
+    pointer-events: none;
+}
+
+.btn-delete {
+    background-color: #dc3545;
+}
+
+.btn-delete:hover {
+    background-color: #c82333;
+}
+
+.empty-content {
+    padding: 1rem;
+    color: #6c757d;
+}
+
+.empty-content i {
+    font-size: 1.5rem;
+    color: #6a78fd;
+    margin-bottom: 0.25rem;
+}

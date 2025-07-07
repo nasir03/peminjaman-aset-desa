@@ -1,0 +1,70 @@
+.custom-thead {
+    background-color: #6a78fd;
+    color: white;
+    text-align: center;
+}
+
+.alert-success {
+    background-color: #d1e7dd;
+    color: #0f5132;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    font-weight: 500;
+    margin-top: 1rem;
+}
+
+.table td,
+.table th {
+    vertical-align: middle;
+}
+
+.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    font-size: 14px;
+    border-radius: 6px;
+    margin: 0 3px;
+    color: white;
+    transition: 0.3s ease;
+    border: none;
+}
+
+.btn-icon i {
+    pointer-events: none;
+}
+
+.btn-success {
+    background-color: #28a745;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+}
+
+.btn-delete {
+    background-color: #dc3545;
+}
+
+.btn-delete:hover {
+    background-color: #bd2130;
+}
+
+.badge-warning {
+    background-color: #ffc107;
+    color: black;
+}
+
+.badge-success {
+    background-color: #28a745;
+}
+
+.badge-danger {
+    background-color: #dc3545;
+}
+
+.badge-secondary {
+    background-color: #6c757d;
+}

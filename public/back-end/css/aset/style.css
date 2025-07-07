@@ -1,0 +1,92 @@
+/* Ukuran foto aset */
+.asset-photo {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    display: block;
+    margin: 0 auto;
+}
+
+/* Tombol aksi sejajar */
+.action-cell {
+    white-space: nowrap;
+}
+
+.action-cell .btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+    border-radius: 6px;
+    margin: 0 4px;
+    color: white;
+    transition: 0.3s ease;
+}
+
+.btn-icon i {
+    pointer-events: none;
+}
+
+/* Warna tombol */
+.btn-edit {
+    background-color: #ffc107;
+    border: none;
+}
+
+.btn-delete {
+    background-color: #dc3545;
+    border: none;
+}
+
+.btn-primary {
+    background-color: #6a78fd;
+    border: none;
+}
+
+.btn-edit:hover {
+    background-color: #e0a800;
+}
+
+.btn-delete:hover {
+    background-color: #c82333;
+}
+
+.btn-primary:hover {
+    background-color: #5a66e5;
+}
+
+/* Badge kondisi */
+.status-baik {
+    background-color: #28a745;
+    color: white;
+}
+
+.status-rusak {
+    background-color: #dc3545;
+    color: white;
+}
+
+.status-sedang {
+    background-color: #ffc107;
+    color: black;
+}
+
+/* Header tabel */
+.custom-thead {
+    background-color: #6a78fd !important;
+    color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .action-cell {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        justify-content: center;
+    }
+}

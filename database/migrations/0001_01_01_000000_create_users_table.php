@@ -4,10 +4,9 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
-     * Run the migrations.
+     * Jalankan migration.
      */
     public function up(): void
     {
@@ -15,6 +14,17 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
+
+            // ✅ Kolom tambahan
+            $table->enum('role', ['admin', 'warga', 'pimpinan'])->default('warga');
+            $table->string('no_telepon')->nullable();
+            $table->text('alamat')->nullable();
+            $table->enum('jenis_kelamin', ['laki-laki', 'perempuan'])->nullable();
+            $table->string('foto')->nullable();
+
+            // ✅ Kolom blokir akun
+            $table->boolean('is_blocked')->default(false);
+
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
@@ -38,7 +48,7 @@ return new class extends Migration
     }
 
     /**
-     * Reverse the migrations.
+     * Rollback perubahan.
      */
     public function down(): void
     {
