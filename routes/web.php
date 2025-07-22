@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Models\Peminjaman;
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('home');
 });
 
 // ==================== LOGIN DAN REGISTER (TERBUKA) ====================
@@ -75,6 +75,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/denda', [DendaController::class, 'index'])->name('denda.index');
     Route::get('/denda/{id_pengembalian}/bayar', [DendaController::class, 'form'])->name('denda.form');
     Route::post('/denda/{id_pengembalian}/bayar', [DendaController::class, 'bayar'])->name('denda.bayar');
+    Route::delete('/pembayaran_denda/{id}', [DendaController::class, 'destroy'])->name('pembayaran_denda.destroy');
 
     // LAPORAN PDF
     Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.cetak');

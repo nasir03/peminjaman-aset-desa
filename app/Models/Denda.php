@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Denda extends Model
 {
-    // Sesuaikan nama tabel di database
     protected $table = 'pembayaran_denda';
 
     protected $fillable = [
@@ -15,24 +14,14 @@ class Denda extends Model
         'metode_pembayaran',
         'tanggal_bayar',
         'keterangan',
-        'bukti_pembayaran',
+        'foto_pembayaran',
     ];
 
-    public $timestamps = true; // jika tabel kamu punya kolom created_at & updated_at
+    public $timestamps = true;
 
-    // Relasi ke pengembalian
+    // ✅ Ini relasi sudah BENAR
     public function pengembalian()
     {
-        return $this->belongsTo(Pengembalian::class, 'id_pengembalian');
+        return $this->belongsTo(Pengembalian::class, 'id_pengembalian', 'id_pengembalian');
     }
-
-public function laporan()
-{
-    $peminjaman = Peminjaman::with('user', 'asset')->get();
-    $pengembalian = Pengembalian::with('peminjaman.user', 'peminjaman.asset')->get();
-    $denda = Denda::with('pengembalian.peminjaman.user', 'pengembalian.peminjaman.asset')->get();
-
-    return view('laporan.index', compact('peminjaman', 'pengembalian', 'denda'));
-}
-
 }

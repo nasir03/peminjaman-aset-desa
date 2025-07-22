@@ -29,12 +29,13 @@
                             <th>Kondisi Aset</th>
                             <th>Catatan</th>
                             <th>Foto Kondisi</th> {{-- ✅ Kolom baru --}}
-                            <th><strong>Denda</strong></th>
-                            @auth
-                                @if(Auth::user()->role === 'admin')
-                                    <th style="width: 100px;">Aksi</th>
-                                @endif
-                            @endauth
+                            <th><strong>Denda</strong></th>  
+                           @auth
+    @if(in_array(Auth::user()->role, ['admin', 'warga']))
+        <th style="width: 100px;">Aksi</th>
+    @endif
+@endauth
+
                         </tr>
                     </thead>
                     <tbody>
@@ -66,17 +67,17 @@
         {{-- Tombol untuk warga --}}
         @if(Auth::user()->role === 'warga')
           
-
+ <a href="{{ route('denda.form', ['id_pengembalian' => $pengembalian->id_pengembalian]) }}" 
+   class="btn btn-sm btn-success" 
+   title="Bayar Denda">
+    <i class="fas fa-money-bill-wave"></i> Bayar
+</a>
 
         @endif
 
         {{-- Tombol untuk admin --}}
         @if(Auth::user()->role === 'admin')
-         <a href="{{ route('denda.form', ['id_pengembalian' => $pengembalian->id_pengembalian]) }}" 
-   class="btn btn-sm btn-success" 
-   title="Bayar Denda">
-    <i class="fas fa-money-bill-wave"></i> Bayar
-</a>
+        
 
             <form action="{{ route('pengembalian.destroy', $pengembalian->id_pengembalian) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus data ini?')">
                 @csrf

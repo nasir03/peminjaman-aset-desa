@@ -4,11 +4,23 @@
 <div class="container-fluid">
     <h1 class="h3 mb-4 text-gray-800">Kategori Aset</h1>
 
+    {{-- Notifikasi sukses --}}
     @if (session('success'))
         <div class="alert alert-success">
             <i class="fas fa-check-circle"></i> {{ session('success') }}
         </div>
     @endif
+
+    {{-- Tombol Tambah Kategori (khusus admin) --}}
+    @auth
+        @if(Auth::user()->role === 'admin')
+            <div class="mb-3 text-end">
+                <a href="{{ route('kategori.create') }}" class="btn btn-primary">
+                    <i class="fas fa-folder-plus"></i> Tambah Kategori
+                </a>
+            </div>
+        @endif
+    @endauth
 
     {{-- Tambahkan stylesheet kategori --}}
     <link rel="stylesheet" href="{{ asset('back-end/css/kategori/style.css') }}">
@@ -22,9 +34,11 @@
                             <th style="width: 50px;">No</th>
                             <th>Nama Kategori</th>
                             <th>Deskripsi</th>
-                            @if(Auth::user()->role === 'admin')
-                                <th style="width: 160px;">Aksi</th>
-                            @endif
+                            @auth
+                                @if(Auth::user()->role === 'admin')
+                                    <th style="width: 160px;">Aksi</th>
+                                @endif
+                            @endauth
                         </tr>
                     </thead>
                     <tbody>
@@ -33,33 +47,32 @@
                                 <td>{{ $index + 1 }}</td>
                                 <td>{{ $item->nama_kategori }}</td>
                                 <td>{{ $item->deskripsi }}</td>
-                                @if(Auth::user()->role === 'admin')
-                                <td class="kategori-aksi">
-                                    {{-- Tambah Kategori --}}
-                                    <a href="{{ route('kategori.create') }}" class="btn-icon btn-tambah" title="Tambah Kategori Baru">
-                                        <i class="fas fa-folder-plus"></i>
-                                    </a>
+                                @auth
+                                    @if(Auth::user()->role === 'admin')
+                                        <td class="kategori-aksi">
+                                            {{-- Edit --}}
+                                            <a href="{{ route('kategori.edit', $item->id_kategori) }}" class="btn-icon btn-edit" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
 
-                                    {{-- Edit --}}
-                                    <a href="{{ route('kategori.edit', $item->id_kategori) }}" class="btn-icon btn-edit" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-
-                                    {{-- Hapus --}}
-                                    <form action="{{ route('kategori.destroy', $item->id_kategori) }}" method="POST" class="d-inline"
-                                          onsubmit="return confirm('Yakin ingin hapus?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn-icon btn-hapus" title="Hapus">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </button>
-                                    </form>
-                                </td>
-                                @endif
+                                            {{-- Hapus --}}
+                                            <form action="{{ route('kategori.destroy', $item->id_kategori) }}" method="POST" class="d-inline"
+                                                onsubmit="return confirm('Yakin ingin hapus?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn-icon btn-hapus" title="Hapus">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    @endif
+                                @endauth
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="{{ Auth::user()->role === 'admin' ? '4' : '3' }}" class="text-center text-muted">Belum ada data kategori.</td>
+                                <td colspan="{{ Auth::user()->role === 'admin' ? '4' : '3' }}" class="text-center text-muted">
+                                    Belum ada data kategori.
+                                </td>
                             </tr>
                         @endforelse
                     </tbody>

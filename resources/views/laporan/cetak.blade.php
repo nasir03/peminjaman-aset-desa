@@ -144,48 +144,42 @@
     </div>
     @endif
 
-    {{-- Data Denda --}}
-    @if(!$jenis || $jenis === 'denda')
-    <div class="card mb-5">
-        <div class="card-header bg-danger text-white">Data Denda</div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped">
-                    <thead>
-                        <tr>
-                            <th>Nama Peminjam</th>
-                            <th>Nama Aset</th>
-                            <th>Jumlah Denda</th>
-                            <th>Tanggal Pengembalian</th>
-                            <th>Bukti Pembayaran</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($pengembalian as $data)
-                            @if(isset($data->denda) && $data->denda > 0)
-                                <tr>
-                                    <td>{{ $data->peminjaman->user->name ?? '-' }}</td>
-                                    <td>{{ $data->peminjaman->asset->nama_asset ?? '-' }}</td>
-                                    <td>Rp {{ number_format($data->denda, 0, ',', '.') }}</td>
-                                    <td>{{ \Carbon\Carbon::parse($data->tanggal_pengembalian)->format('d-m-Y') }}</td>
-                                    <td>
-                                        @if ($data->denda && $data->denda->foto_pembayaran)
-                                            <a href="{{ asset('bukti_denda/' . $data->denda->foto_pembayaran) }}" target="_blank">Lihat Bukti</a>
-                                        @else
-                                            Belum upload
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                        @empty
-                            <tr><td colspan="5" class="text-center">Tidak ada data denda.</td></tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+   {{-- Data Denda --}}
+@if(!$jenis || $jenis === 'denda')
+<div class="card mb-5">
+    <div class="card-header bg-danger text-white">Data Denda</div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Nama Peminjam</th>
+                        <th>Nama Aset</th>
+                        <th>Jumlah Denda</th>
+                        <th>Tanggal Pengembalian</th>
+                       
+                    </tr>
+                </thead>
+                <tbody>
+                   @foreach($pengembalian as $data)
+    @if($data->denda) {{-- Jika relasi denda ada --}}
+        <tr>
+            <td>{{ $data->peminjaman->user->name ?? '-' }}</td>
+            <td>{{ $data->peminjaman->asset->nama_asset ?? '-' }}</td>
+           <td>Rp {{ number_format($data->denda ?? 0, 0, ',', '.') }}</td>
+            <td>{{ \Carbon\Carbon::parse($data->tanggal_pengembalian)->format('d-m-Y') }}</td>
+           
+        </tr>
+    @endif
+@endforeach
+
+                </tbody>
+            </table>
         </div>
     </div>
-    @endif
+</div>
+@endif
+
 
 </div>
 @endsection

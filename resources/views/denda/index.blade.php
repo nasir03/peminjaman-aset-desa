@@ -21,30 +21,39 @@
                 <th>Tanggal Bayar</th>
                 <th>Bukti Pembayaran</th>
                 <th>Keterangan</th>
+                <th>Aksi</th>
             </tr>
         </thead>
         <tbody>
             @forelse ($denda as $item)
-                @if ($item->pengembalian && $item->pengembalian->peminjaman && $item->pengembalian->peminjaman->user)
+                @php
+                    $pengembalian = $item->pengembalian ?? null;
+                    $peminjaman = $pengembalian->peminjaman ?? null;
+                    $user = $peminjaman->user ?? null;
+                    $asset = $peminjaman->asset ?? null;
+                @endphp
+
+                @if ($user && $asset)
                     <tr>
-                        <td>{{ $item->pengembalian->peminjaman->user->name }}</td>
-                        <td>{{ $item->pengembalian->peminjaman->asset->nama_asset }}</td>
-                        <td>{{ \Carbon\Carbon::parse($item->pengembalian->tanggal_pengembalian)->format('d M Y') }}</td>
+                        <td>{{ $user->name }}</td>
+                        <td>{{ $asset->nama_asset }}</td>
+                        <td>{{ $pengembalian->tanggal_pengembalian ? \Carbon\Carbon::parse($pengembalian->tanggal_pengembalian)->format('d M Y') : '-' }}</td>
                         <td>Rp {{ number_format($item->jumlah_dibayar, 0, ',', '.') }}</td>
                         <td>{{ $item->metode_pembayaran }}</td>
-                        <td>{{ \Carbon\Carbon::parse($item->tanggal_bayar)->format('d M Y') }}</td>
+                        <td>{{ $item->tanggal_bayar ? \Carbon\Carbon::parse($item->tanggal_bayar)->format('d M Y') : '-' }}</td>
                         <td>
-                            @if ($item->foto_pembayaran)
-                                @php
-                                    $ext = strtolower(pathinfo($item->foto_pembayaran, PATHINFO_EXTENSION));
-                                @endphp
+                            @php
+                                $foto = $item->foto_pembayaran ?? null;
+                                $ext = $foto ? strtolower(pathinfo($foto, PATHINFO_EXTENSION)) : '';
+                            @endphp
 
+                            @if ($foto)
                                 @if (in_array($ext, ['jpg', 'jpeg', 'png']))
-                                    <a href="{{ asset('storage/bukti_denda/' . $item->foto_pembayaran) }}" target="_blank">
-                                        <img src="{{ asset('storage/bukti_denda/' . $item->foto_pembayaran) }}" alt="Bukti" width="80">
+                                    <a href="{{ asset('storage/bukti_denda/' . $foto) }}" target="_blank">
+                                        <img src="{{ asset('storage/bukti_denda/' . $foto) }}" alt="Bukti" width="80">
                                     </a>
                                 @elseif ($ext === 'pdf')
-                                    <a href="{{ asset('storage/bukti_denda/' . $item->foto_pembayaran) }}" target="_blank">
+                                    <a href="{{ asset('storage/bukti_denda/' . $foto) }}" target="_blank">
                                         <i class="fas fa-file-pdf text-danger"></i> Lihat PDF
                                     </a>
                                 @else
@@ -55,11 +64,20 @@
                             @endif
                         </td>
                         <td>{{ $item->keterangan ?? '-' }}</td>
+                        <td>
+                            <form action="{{ route('pembayaran_denda.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus data ini?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-trash-alt"></i> Hapus
+                                </button>
+                            </form>
+                        </td>
                     </tr>
                 @endif
             @empty
                 <tr>
-                    <td colspan="8" class="text-center text-muted">Belum ada data pembayaran denda.</td>
+                    <td colspan="9" class="text-center text-muted">Belum ada data pembayaran denda.</td>
                 </tr>
             @endforelse
         </tbody>

@@ -40,32 +40,43 @@ class PengembalianController extends Controller
         $peminjaman = Peminjaman::with('user', 'asset')->findOrFail($request->id_peminjaman);
         $user = $peminjaman->user;
         $aset = $peminjaman->asset;
+       $hargaAset = $aset->harga_aset ?? 0;
+
+
+        $jumlahPinjam = $peminjaman->jumlah_pinjam;
+        $jumlahKembali = $request->jumlah_kembali;
+
+        if ($jumlahKembali > $jumlahPinjam) {
+            return redirect()->back()->with('error', 'Jumlah kembali tidak boleh melebihi jumlah pinjam.');
+        }
 
         $denda = 0;
         $tglKembali = Carbon::parse($peminjaman->tanggal_kembali);
         $tglPengembalian = Carbon::parse($request->tanggal_pengembalian);
 
-        if ($tglPengembalian->gt($tglKembali)) {
-            $hariTelat = $tglPengembalian->diffInDays($tglKembali);
-            $denda += $hariTelat * 5000;
+        if ($tglPengembalian->greaterThan($tglKembali)) {
+            $hariTerlambat = $tglPengembalian->diffInDays($tglKembali);
+            $denda += $hariTerlambat * 5000;
         }
 
-        $selisih = $peminjaman->jumlah_pinjam - $request->jumlah_kembali;
-        if ($selisih > 0) {
-            if ($request->kondisi_asset == 'hilang') {
-                $denda += $selisih * $aset->harga;
-            } else {
-                $denda += $selisih * 10000;
-            }
+        switch ($request->kondisi_asset) {
+            case 'rusak ringan':
+                $denda += $jumlahKembali * $hargaAset * 0.3;
+                break;
+            case 'rusak berat':
+                $denda += $jumlahKembali * $hargaAset * 0.8;
+                break;
+            case 'hilang':
+                $denda += $jumlahKembali * $hargaAset;
+                break;
         }
 
-        if ($request->kondisi_asset == 'rusak ringan') {
-            $denda += 10000;
-        } elseif ($request->kondisi_asset == 'rusak berat') {
-            $denda += 25000;
-        } elseif ($request->kondisi_asset == 'hilang' && $selisih <= 0) {
-            $denda += $request->jumlah_kembali * $aset->harga;
+        if ($jumlahKembali < $jumlahPinjam) {
+            $jumlahTidakKembali = $jumlahPinjam - $jumlahKembali;
+            $denda += $jumlahTidakKembali * $hargaAset;
         }
+
+        $denda = max(0, round($denda));
 
         $fotoKondisiPath = null;
         if ($request->hasFile('foto_kondisi')) {
@@ -75,7 +86,7 @@ class PengembalianController extends Controller
         Pengembalian::create([
             'id_peminjaman'        => $request->id_peminjaman,
             'tanggal_pengembalian' => $request->tanggal_pengembalian,
-            'jumlah_kembali'       => $request->jumlah_kembali,
+            'jumlah_kembali'       => $jumlahKembali,
             'kondisi_asset'        => $request->kondisi_asset,
             'catatan_pengembalian' => $request->catatan_pengembalian,
             'denda'                => $denda,
@@ -87,7 +98,6 @@ class PengembalianController extends Controller
         $peminjaman->status = 'dikembalikan';
         $peminjaman->save();
 
-        // === Notifikasi untuk Admin ===
         $admin = User::where('role', 'admin')->first();
         if ($admin) {
             DB::table('notifications')->insert([

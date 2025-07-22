@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use App\Models\Denda;
 use App\Models\Pengembalian;
 
@@ -39,10 +40,13 @@ class DendaController extends Controller
         ]);
 
         $fileName = null;
+
         if ($request->hasFile('foto_pembayaran')) {
             $file = $request->file('foto_pembayaran');
             $fileName = 'bukti_' . time() . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('public/bukti_denda', $fileName); // Simpan ke storage
+
+            // Simpan file ke storage/app/public/bukti_denda
+            $file->storeAs('public/bukti_denda', $fileName);
         }
 
         Denda::create([
@@ -55,5 +59,19 @@ class DendaController extends Controller
         ]);
 
         return redirect()->route('denda.index')->with('success', 'Pembayaran denda berhasil disimpan.');
+    }
+
+    public function destroy($id)
+    {
+        $pembayaran = Denda::findOrFail($id);
+
+        // Hapus file bukti pembayaran jika ada
+        if ($pembayaran->foto_pembayaran && Storage::exists('public/bukti_denda/' . $pembayaran->foto_pembayaran)) {
+            Storage::delete('public/bukti_denda/' . $pembayaran->foto_pembayaran);
+        }
+
+        $pembayaran->delete();
+
+        return redirect()->back()->with('success', 'Data pembayaran denda berhasil dihapus.');
     }
 }

@@ -12,6 +12,17 @@
             </div>
         @endif
 
+        {{-- Tombol Tambah Aset (khusus admin) --}}
+        @auth
+            @if (Auth::user()->role === 'admin')
+                <div class="mb-3 text-end">
+                    <a href="{{ route('asset.create') }}" class="btn btn-primary">
+                        <i class="fas fa-folder-plus"></i> Tambah Aset
+                    </a>
+                </div>
+            @endif
+        @endauth
+
         {{-- Tambahkan stylesheet --}}
         <link rel="stylesheet" href="{{ asset('back-end/css/aset/style.css') }}">
 
@@ -65,12 +76,8 @@
                                     @auth
                                         @if (Auth::user()->role === 'admin')
                                             <td class="action-cell text-center">
-                                                <a href="{{ route('asset.create') }}" class="btn-icon btn-primary"
-                                                    title="Tambah Aset">
-                                                    <i class="fas fa-folder-plus"></i>
-                                                </a>
-                                                <a href="{{ route('asset.edit', $item->id_asset) }}" class="btn-icon btn-edit"
-                                                    title="Edit">
+                                                <a href="{{ route('asset.edit', $item->id_asset) }}"
+                                                    class="btn-icon btn-edit" title="Edit">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
                                                 <form action="{{ route('asset.destroy', $item->id_asset) }}" method="POST"
@@ -84,8 +91,6 @@
                                             </td>
                                         @endif
                                     @endauth
-
-
                                 </tr>
                             @empty
                                 <tr>

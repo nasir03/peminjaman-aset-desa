@@ -16,9 +16,10 @@
         </div>
     @endif
 
+    {{-- Info Pengembalian --}}
     <p><strong>Nama Peminjam:</strong> {{ $pengembalian->peminjaman->user->name }}</p>
     <p><strong>Nama Aset:</strong> {{ $pengembalian->peminjaman->asset->nama_asset }}</p>
-    <p><strong>Tanggal Pengembalian:</strong> {{ $pengembalian->tanggal_pengembalian }}</p>
+    <p><strong>Tanggal Pengembalian:</strong> {{ \Carbon\Carbon::parse($pengembalian->tanggal_pengembalian)->format('d M Y') }}</p>
     <p><strong>Denda Dikenakan:</strong> 
         <span class="text-danger">Rp {{ number_format(abs($pengembalian->denda), 0, ',', '.') }}</span>
     </p>
@@ -68,7 +69,7 @@
         </div>
 
         <div class="form-group">
-            <label>Upload Foto Pembayaran (jpg, jpeg, png, pdf)</label>
+            <label>Upload Bukti Pembayaran <small class="text-muted">(jpg, jpeg, png, pdf)</small></label>
             <input type="file" name="foto_pembayaran" class="form-control-file" accept=".jpg,.jpeg,.png,.pdf" required>
             @error('foto_pembayaran')
                 <small class="text-danger">{{ $message }}</small>
