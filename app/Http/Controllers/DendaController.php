@@ -29,37 +29,36 @@ class DendaController extends Controller
         return view('denda.form', compact('pengembalian'));
     }
 
-    public function bayar(Request $request, $id_pengembalian)
-    {
-        $request->validate([
-            'jumlah_dibayar'      => 'required|numeric|min:1',
-            'metode_pembayaran'   => 'required|string',
-            'tanggal_bayar'       => 'required|date',
-            'keterangan'          => 'nullable|string',
-            'foto_pembayaran'     => 'required|mimes:jpg,jpeg,png,pdf|max:5120',
-        ]);
+   public function bayar(Request $request, $id_pengembalian)
+{
+    $request->validate([
+        'jumlah_dibayar'      => 'required|numeric|min:1',
+        'metode_pembayaran'   => 'required|string',
+        'tanggal_bayar'       => 'required|date',
+        'keterangan'          => 'nullable|string',
+        'foto_pembayaran'     => 'required|mimes:jpg,jpeg,png,pdf|max:5120',
+    ]);
 
-        $fileName = null;
+    $fileName = null;
 
-        if ($request->hasFile('foto_pembayaran')) {
-            $file = $request->file('foto_pembayaran');
-            $fileName = 'bukti_' . time() . '.' . $file->getClientOriginalExtension();
-
-            // Simpan file ke storage/app/public/bukti_denda
-            $file->storeAs('public/bukti_denda', $fileName);
-        }
-
-        Denda::create([
-            'id_pengembalian'   => $id_pengembalian,
-            'jumlah_dibayar'    => $request->jumlah_dibayar,
-            'metode_pembayaran' => $request->metode_pembayaran,
-            'tanggal_bayar'     => $request->tanggal_bayar,
-            'keterangan'        => $request->keterangan,
-            'foto_pembayaran'   => $fileName,
-        ]);
-
-        return redirect()->route('denda.index')->with('success', 'Pembayaran denda berhasil disimpan.');
+    // Cek apakah ada file yang di-upload
+    if ($request->hasFile('foto_pembayaran')) {
+        // Menyimpan foto ke storage public dengan nama file unik
+        $fileName = $request->file('foto_pembayaran')->store('bukti_denda', 'public');
     }
+
+    // Simpan data denda
+    Denda::create([
+        'id_pengembalian'   => $id_pengembalian,
+        'jumlah_dibayar'    => $request->jumlah_dibayar,
+        'metode_pembayaran' => $request->metode_pembayaran,
+        'tanggal_bayar'     => $request->tanggal_bayar,
+        'keterangan'        => $request->keterangan,
+        'foto_pembayaran'   => $fileName,
+    ]);
+
+    return redirect()->route('denda.index')->with('success', 'Pembayaran denda berhasil disimpan.');
+}
 
     public function destroy($id)
     {

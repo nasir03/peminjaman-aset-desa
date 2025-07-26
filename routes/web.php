@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KategoriAssetController;
 use App\Http\Controllers\AssetController;
 use App\Http\Controllers\PeminjamanController;
@@ -33,9 +34,7 @@ Route::get('/tes-email-terlambat', [NotifikasiController::class, 'cekPengembalia
 // ==================== HANYA BISA DIAKSES SETELAH LOGIN ====================
 Route::middleware(['auth'])->group(function () {
     // DASHBOARD
-    Route::get('/dashboard', function () {
-        return view('back-end.dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // KATEGORI ASET
     Route::resource('kategori', KategoriAssetController::class);
