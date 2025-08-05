@@ -53,46 +53,80 @@ class NotifikasiController extends Controller
         ]);
     }
 
-    // Notifikasi keterlambatan pengembalian + kirim email
-    public function cekPengembalianTerlambat()
-    {
-        $hariIni = now()->toDateString();
+    public function pengingatDanTerlambatPengembalian()
+{
+    $hariIni = now()->toDateString();
+    $besok = now()->addDay()->toDateString();
 
-        $terlambat = Peminjaman::where('status', 'dipinjam')
-            ->whereDate('tanggal_kembali', '<', $hariIni)
-            ->with('user', 'aset')
-            ->get();
+    // --- 1. Notifikasi PENGINGAT: 1 hari sebelum jatuh tempo
+    $peminjamanDekatJatuhTempo = Peminjaman::where('status', 'dipinjam')
+        ->whereDate('tanggal_kembali', $besok)
+        ->with('user', 'aset')
+        ->get();
 
-        foreach ($terlambat as $peminjaman) {
-            $sudahAdaNotifikasi = Notifikasi::where('penerima_id', $peminjaman->user_id)
-                ->where('id_peminjaman', $peminjaman->id)
-                ->whereDate('created_at', $hariIni)
-                ->exists();
+    foreach ($peminjamanDekatJatuhTempo as $peminjaman) {
+        $sudahAda = Notifikasi::where('penerima_id', $peminjaman->user_id)
+            ->where('id_peminjaman', $peminjaman->id)
+            ->where('tipe', 'pengingat')
+            ->whereDate('created_at', now()->toDateString())
+            ->exists();
 
-            if (!$sudahAdaNotifikasi) {
-                $namaAset = $peminjaman->aset->nama_asset ?? 'aset';
+        if (!$sudahAda) {
+            $namaAset = $peminjaman->aset->nama_asset ?? 'aset';
+            $tanggalKembali = \Carbon\Carbon::parse($peminjaman->tanggal_kembali)->format('d-m-Y');
 
-                $pesan = "Pengingat: Anda belum mengembalikan aset {$namaAset} yang seharusnya dikembalikan pada {$peminjaman->tanggal_kembali}.";
+            $pesan = "Pengingat: Aset <strong>{$namaAset}</strong> harus dikembalikan BESOK (pada {$tanggalKembali}). Harap segera disiapkan.";
 
-                Notifikasi::create([
-                    'id_user' => 1,
-                    'penerima_id' => $peminjaman->user_id,
-                    'id_peminjaman' => $peminjaman->id,
-                    'tipe' => 'pengembalian',
-                    'pesan' => strip_tags($pesan),
-                    'dibaca' => false,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
+            Notifikasi::create([
+                'id_user' => 1,
+                'penerima_id' => $peminjaman->user_id,
+                'id_peminjaman' => $peminjaman->id,
+                'tipe' => 'pengingat',
+                'pesan' => strip_tags($pesan),
+                'dibaca' => false,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+    }
 
-                if ($peminjaman->user && $peminjaman->user->email) {
-                    Mail::to($peminjaman->user->email)->send(
-                        new PengembalianTerlambatMail($peminjaman, $pesan)
-                    );
-                }
+    // --- 2. Notifikasi TERLAMBAT: lewat tanggal kembali
+    $terlambat = Peminjaman::where('status', 'dipinjam')
+        ->whereDate('tanggal_kembali', '<', $hariIni)
+        ->with('user', 'aset')
+        ->get();
+
+    foreach ($terlambat as $peminjaman) {
+        $sudahAda = Notifikasi::where('penerima_id', $peminjaman->user_id)
+            ->where('id_peminjaman', $peminjaman->id)
+            ->where('tipe', 'pengembalian')
+            ->whereDate('created_at', $hariIni)
+            ->exists();
+
+        if (!$sudahAda) {
+            $namaAset = $peminjaman->aset->nama_asset ?? 'aset';
+
+            $pesan = "Peringatan: Anda belum mengembalikan aset <strong>{$namaAset}</strong> yang seharusnya dikembalikan pada {$peminjaman->tanggal_kembali}.";
+
+            Notifikasi::create([
+                'id_user' => 1,
+                'penerima_id' => $peminjaman->user_id,
+                'id_peminjaman' => $peminjaman->id,
+                'tipe' => 'pengembalian',
+                'pesan' => strip_tags($pesan),
+                'dibaca' => false,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            if ($peminjaman->user && $peminjaman->user->email) {
+                Mail::to($peminjaman->user->email)->send(
+                    new PengembalianTerlambatMail($peminjaman, strip_tags($pesan))
+                );
             }
         }
-
-        return redirect()->back()->with('success', 'Notifikasi keterlambatan berhasil dikirim.');
     }
+
+    return redirect()->back()->with('success', 'Notifikasi pengingat dan keterlambatan berhasil dikirim.');
+}
 }

@@ -1,12 +1,5 @@
 @extends('back-end.layouts.app')
 
-@php
-    use Carbon\Carbon;
-    $bulanLabels = $laporanBulanan->pluck('bulan')->map(function ($b) {
-        return Carbon::create()->month($b)->locale('id')->translatedFormat('F');
-    });
-@endphp
-
 @section('content')
 <div class="container-fluid" id="container-wrapper">
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
@@ -18,74 +11,38 @@
     </div>
 
     <div class="row mb-3">
+        {{-- Kartu Statistik --}}
         @php
-            $dashboardCards = [
-                [
-                    'title' => 'Total Peminjaman (Bulan Ini)',
-                    'value' => $totalPeminjaman,
-                    'icon' => 'fas fa-calendar',
-                    'color' => 'text-primary',
-                    'extra' => '<div class="mt-2 mb-0 text-muted text-xs">
-                        <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> +%</span>
-                        <span>Dari bulan lalu</span>
-                    </div>'
-                ],
-                [
-                    'title' => 'Aset Tersedia',
-                    'value' => $asetTersedia,
-                    'icon' => 'fas fa-boxes',
-                    'color' => 'text-success',
-                    'extra' => '<div class="mt-2 mb-0 text-muted text-xs">
-                        <span class="text-info mr-2"><i class="fas fa-check-circle"></i></span>
-                        <span>Siap dipinjam</span>
-                    </div>'
-                ],
-                [
-                    'title' => 'Peminjam Aktif',
-                    'value' => $peminjamanAktif,
-                    'icon' => 'fas fa-users',
-                    'color' => 'text-info',
-                    'extra' => '<div class="mt-2 mb-0 text-muted text-xs">
-                        <span class="text-success mr-2"><i class="fas fa-arrow-up"></i> +%</span>
-                        <span>Dari bulan lalu</span>
-                    </div>'
-                ],
-                [
-                    'title' => 'Permohonan Pending',
-                    'value' => $permohonanPending,
-                    'icon' => 'fas fa-clock',
-                    'color' => 'text-warning',
-                    'extra' => '<div class="mt-2 mb-0 text-muted text-xs">
-                        <span class="text-warning mr-2"><i class="fas fa-exclamation-triangle"></i></span>
-                        <span>Menunggu persetujuan</span>
-                    </div>'
-                ]
+            $cards = [
+                ['title' => 'Total Peminjaman (Bulan Ini)', 'value' => $totalPeminjaman, 'icon' => 'fas fa-calendar', 'color' => 'text-primary'],
+                ['title' => 'Aset Tersedia', 'value' => $asetTersedia, 'icon' => 'fas fa-boxes', 'color' => 'text-success'],
+                ['title' => 'Peminjam Aktif', 'value' => $peminjamanAktif, 'icon' => 'fas fa-users', 'color' => 'text-info'],
+                ['title' => 'Permohonan Pending', 'value' => $permohonanPending, 'icon' => 'fas fa-clock', 'color' => 'text-warning'],
             ];
         @endphp
 
-        @foreach($dashboardCards as $card)
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <div class="row align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-uppercase mb-1">{{ $card['title'] }}</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $card['value'] }}</div>
-                                {!! $card['extra'] !!}
-                            </div>
-                            <div class="col-auto">
-                                <i class="{{ $card['icon'] }} fa-2x {{ $card['color'] }}"></i>
-                            </div>
+        @foreach($cards as $card)
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">{{ $card['title'] }}</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $card['value'] }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="{{ $card['icon'] }} fa-2x {{ $card['color'] }}"></i>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
         @endforeach
 
-        <!-- Laporan Bulanan -->
+        {{-- Grafik Laporan Bulanan --}}
         <div class="col-xl-8 col-lg-7">
             <div class="card mb-4">
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <div class="card-header">
                     <h6 class="m-0 font-weight-bold text-primary">Laporan Peminjaman Bulanan</h6>
                 </div>
                 <div class="card-body">
@@ -96,10 +53,10 @@
             </div>
         </div>
 
-        <!-- Penggunaan Aset -->
+        {{-- Penggunaan Aset --}}
         <div class="col-xl-4 col-lg-5">
             <div class="card mb-4">
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <div class="card-header">
                     <h6 class="m-0 font-weight-bold text-primary">Tingkat Penggunaan Aset</h6>
                 </div>
                 <div class="card-body">
@@ -111,8 +68,8 @@
                             </div>
                             <div class="progress" style="height: 12px;">
                                 <div class="progress-bar bg-success" role="progressbar"
-                                     style="width: {{ min(($aset->peminjaman_count / max($maxUsage, 1)) * 100, 100) }}%"
-                                     aria-valuenow="{{ $aset->peminjaman_count }}" aria-valuemin="0" aria-valuemax="100">
+                                    style="width: {{ min(($aset->peminjaman_count / max($maxUsage, 1)) * 100, 100) }}%"
+                                    aria-valuenow="{{ $aset->peminjaman_count }}" aria-valuemin="0" aria-valuemax="100">
                                 </div>
                             </div>
                         </div>
@@ -121,70 +78,77 @@
             </div>
         </div>
 
-        <!-- Peminjaman Terbaru -->
-        <div class="col-xl-8 col-lg-7 mb-4">
+        {{-- Peminjaman Terbaru --}}
+        <div class="col-xl-8 col-lg-12 mb-4">
             <div class="card">
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <div class="card-header">
                     <h6 class="m-0 font-weight-bold text-primary">Daftar Peminjaman Terbaru</h6>
                 </div>
                 <div class="table-responsive">
                     <table class="table align-items-center table-flush">
                         <thead class="thead-light">
                             <tr>
-                                <th>ID Peminjaman</th>
+                                <th>ID</th>
                                 <th>Peminjam</th>
                                 <th>Aset</th>
                                 <th>Status</th>
-                                <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($latestPeminjaman as $p)
-                                <tr>
-                                    <td>{{ $p->id_peminjaman }}</td>
-                                    <td>{{ $p->user->nama ?? '-' }}</td>
-                                    <td>{{ $p->asset->nama_asset ?? '-' }}</td>
-                                    <td>
-                                        @php
-                                            $badge = match($p->status) {
-                                                'Dikembalikan' => 'badge-success',
-                                                'Dipinjam' => 'badge-warning',
-                                                'Menunggu Persetujuan' => 'badge-danger',
-                                                'Disetujui' => 'badge-info',
-                                                default => 'badge-secondary',
-                                            };
-                                        @endphp
-                                        <span class="badge {{ $badge }}">{{ $p->status }}</span>
-                                    </td>
-                                </tr>
-                            @endforeach
+                            @forelse($latestPeminjaman as $p)
+                            <tr>
+                                <td>{{ $p->id_peminjaman }}</td>
+                                <td>{{ $p->user->name ?? '-' }}</td>
+                                <td>{{ $p->asset->nama_asset ?? '-' }}</td>
+                                <td>
+                                    @php
+                                        $status = strtolower($p->status);
+                                        $badge = match($status) {
+                                            'disetujui' => 'badge-info',
+                                            'dikembalikan' => 'badge-success',
+                                            'pending' => 'badge-warning',
+                                            'ditolak' => 'badge-danger',
+                                            default => 'badge-secondary',
+                                        };
+                                    @endphp
+                                    <span class="badge {{ $badge }}">{{ ucfirst($status) }}</span>
+                                </td>
+                            </tr>
+                            @empty
+                                <tr><td colspan="4" class="text-center">Tidak ada data.</td></tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-       
-    <!-- Footer -->
-    <div class="row">
-        <div class="col-lg-12 text-center">
-            <p>Sistem Peminjaman Aset Desa - Memudahkan pengelolaan aset untuk kepentingan masyarakat</p>
+        {{-- Footer --}}
+        <div class="col-lg-12 text-center mt-4">
+            <p class="small text-muted">Sistem Peminjaman Aset Desa</p>
         </div>
     </div>
 </div>
 @endsection
 
+{{-- Debug (opsional) --}}
+{{-- 
+<pre>{{ json_encode($bulanLabels, JSON_PRETTY_PRINT) }}</pre>
+<pre>{{ json_encode($laporanBulanan->pluck('total'), JSON_PRETTY_PRINT) }}</pre>
+--}}
+
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+document.addEventListener('DOMContentLoaded', function () {
     const ctx = document.getElementById('laporanBulananChart').getContext('2d');
     const chart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: {!! json_encode($bulanLabels) !!},
+            labels: {!! json_encode(array_values($bulanLabels->toArray())) !!},
             datasets: [{
                 label: 'Jumlah Peminjaman',
-                data: {!! json_encode($laporanBulanan->pluck('total')) !!},
+                data: {!! json_encode(array_values($laporanBulanan->pluck('total')->toArray())) !!},
                 backgroundColor: 'rgba(78, 115, 223, 0.1)',
                 borderColor: 'rgba(78, 115, 223, 1)',
                 borderWidth: 2,
@@ -201,8 +165,8 @@
             scales: {
                 y: {
                     beginAtZero: true,
-                    grid: { color: '#eaeaea' },
-                    ticks: { stepSize: 1 }
+                    ticks: { stepSize: 1 },
+                    grid: { color: '#eaeaea' }
                 },
                 x: {
                     grid: { color: '#f3f3f3' }
@@ -210,5 +174,6 @@
             }
         }
     });
+});
 </script>
 @endsection

@@ -3,10 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 use App\Models\Peminjaman;
 use App\Models\Asset;
-
-use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -14,25 +13,34 @@ class DashboardController extends Controller
     {
         $bulanIni = Carbon::now()->month;
 
-        // Total peminjaman bulan ini
-        $totalPeminjaman = Peminjaman::whereMonth('created_at', $bulanIni)->count();
+        // Total peminjaman bulan ini (status Disetujui / Dikembalikan - case-insensitive)
+        $totalPeminjaman = Peminjaman::whereMonth('tanggal_pinjam', $bulanIni)
+            ->whereRaw("LOWER(status) IN ('disetujui', 'dikembalikan')")
+            ->count();
 
         // Aset tersedia
-        $asetTersedia = Asset::whereIn('kondisi', ['Baik', 'Rusak Ringan', 'Rusak Berat', 'Hilang'])->count();
+        $asetTersedia = Asset::whereIn('kondisi', ['baik', 'rusak ringan'])->count();
 
-        // Peminjaman aktif
-        $peminjamanAktif = Peminjaman::where('status', 'Dipinjam')->count();
+        // Peminjaman aktif = status Disetujui
+        $peminjamanAktif = Peminjaman::whereRaw("LOWER(status) = 'disetujui'")->count();
 
         // Permohonan pending
-        $permohonanPending = Peminjaman::where('status', 'Menunggu Persetujuan')->count();
+        $permohonanPending = Peminjaman::whereRaw("LOWER(status) = 'pending'")->count();
 
-        // Grafik laporan bulanan
-        $laporanBulanan = Peminjaman::selectRaw('MONTH(created_at) as bulan, COUNT(*) as total')
+        // Grafik bulanan (tanggal_pinjam)
+        $laporanBulanan = Peminjaman::selectRaw('MONTH(tanggal_pinjam) as bulan, COUNT(*) as total')
+            ->whereNotNull('tanggal_pinjam')
+            ->whereRaw("LOWER(status) IN ('disetujui', 'dikembalikan')")
             ->groupBy('bulan')
             ->orderBy('bulan')
             ->get();
 
-        // Tingkat penggunaan aset
+        // Label bulan
+        $bulanLabels = $laporanBulanan->map(function ($item) {
+            return Carbon::create()->month($item->bulan)->translatedFormat('F');
+        });
+
+        // Penggunaan aset
         $penggunaanAset = Asset::withCount('peminjaman')->get();
         $maxUsage = $penggunaanAset->max('peminjaman_count');
 
@@ -45,9 +53,9 @@ class DashboardController extends Controller
             'peminjamanAktif',
             'permohonanPending',
             'laporanBulanan',
+            'bulanLabels',
             'penggunaanAset',
             'latestPeminjaman',
-           
             'maxUsage'
         ));
     }

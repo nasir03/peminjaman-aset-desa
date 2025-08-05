@@ -62,13 +62,16 @@
 </head>
 <body>
 
-{{-- HEADER --}}
+@php
+    $jenis = request('jenis');
+@endphp
+
 <div class="header">
-   
-    <h2>Laporan Data Peminjaman Aset Desa Seuat Jaya</h2>
+    <h2>Laporan Data {{ ucfirst($jenis ?: 'Peminjaman') }} Aset Desa Seuat Jaya</h2>
 </div>
 
 {{-- PEMINJAMAN --}}
+@if(!$jenis || $jenis === 'peminjaman')
 <h4 class="section-blue">Data Peminjaman</h4>
 <table>
     <thead>
@@ -98,8 +101,10 @@
         @endforeach
     </tbody>
 </table>
+@endif
 
 {{-- PENGEMBALIAN --}}
+@if(!$jenis || $jenis === 'pengembalian')
 <h4 class="section-green">Data Pengembalian</h4>
 <table>
     <thead>
@@ -127,8 +132,10 @@
         @endforeach
     </tbody>
 </table>
+@endif
 
 {{-- DENDA --}}
+@if(!$jenis || $jenis === 'denda')
 <h4 class="section-yellow">Data Denda</h4>
 <table>
     <thead>
@@ -154,6 +161,7 @@
         @endforeach
     </tbody>
 </table>
+@endif
 
 </body>
 </html>

@@ -83,7 +83,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="alamat">Alamat</label>
+                            <label for="alamat">Alamat Lengkap (RT/RW)</label>
                             <textarea name="alamat" class="form-control" rows="2" required></textarea>
                         </div>
 
