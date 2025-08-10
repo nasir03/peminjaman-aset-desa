@@ -5,6 +5,8 @@
 <script src="{{ asset('back-end/vendor/chart.js/Chart.min.js') }}"></script>
 <script src="{{ asset('back-end/js/demo/chart-area-demo.js') }}"></script>
 
+
+
 </body>
 
 </html>

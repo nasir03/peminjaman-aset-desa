@@ -20,6 +20,7 @@ return new class extends Migration
             $table->date('tanggal_pinjam');
             $table->date('tanggal_kembali');
             $table->string('keperluan_peminjaman');
+              $table->string('foto_ktp');
 
             // Status & catatan
             $table->enum('status', ['pending', 'disetujui', 'ditolak'])->default('pending');

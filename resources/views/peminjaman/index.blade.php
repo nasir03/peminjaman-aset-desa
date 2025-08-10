@@ -28,10 +28,11 @@
                                 <th>Tanggal Pinjam</th>
                                 <th>Tanggal Kembali</th>
                                 <th>Keperluan</th>
-                                <th>Catatan</th>
                                 <th>Status</th>
+
                                 @auth
                                     @if(Auth::user()->role === 'admin')
+                                        <th>Foto KTP</th>
                                         <th style="width: 140px;">Aksi</th>
                                     @endif
                                 @endauth
@@ -45,18 +46,25 @@
                                     <td>{{ $data->jumlah_pinjam ?? '-' }}</td>
                                     <td>{{ $data->no_telepon }}</td>
                                     <td>{{ ucfirst($data->jenis_kelamin) }}</td>
-                                    <td>{{ $data->alamat }}</td>
+                                    <td>{{ $data->alamat_user }}</td>
                                     <td>{{ $data->tanggal_pinjam }}</td>
                                     <td>{{ $data->tanggal_kembali }}</td>
                                     <td>{{ $data->keperluan_peminjaman }}</td>
-                                    <td>{{ $data->catatan_admin ?? '-' }}</td>
                                     <td>
                                         <span class="badge badge-{{ $data->status == 'pending' ? 'warning' : ($data->status == 'disetujui' ? 'success' : 'danger') }}">
                                             {{ ucfirst($data->status) }}
                                         </span>
                                     </td>
+
                                     @auth
                                         @if(Auth::user()->role === 'admin')
+                                            <td>
+                                                @if($data->foto_ktp)
+                                                    <a href="{{ asset('storage/' . $data->foto_ktp) }}" target="_blank">Lihat KTP</a>
+                                                @else
+                                                    Tidak ada
+                                                @endif
+                                            </td>
                                             <td class="action-cell text-center">
                                                 @if ($data->status === 'pending')
                                                     <form action="{{ route('peminjaman.updateStatus', $data->id_peminjaman) }}"

@@ -27,7 +27,9 @@
         </li>
         @php use Carbon\Carbon; @endphp
 
-      @php
+
+   {{-- NOTIFIKASI  --}}
+@php
     use Illuminate\Support\Facades\Auth;
     use Illuminate\Support\Facades\DB;
 
@@ -47,7 +49,7 @@
         aria-haspopup="true" aria-expanded="false">
         <i class="fas fa-bell fa-fw"></i>
         @if ($notifikasiPeminjaman->count() > 0)
-            <span class="badge badge-danger badge-counter">
+            <span class="badge badge-danger badge-counter" data-last-id="{{ $notifikasiPeminjaman->first()->id }}">
                 {{ $notifikasiPeminjaman->count() }}
             </span>
         @endif
@@ -64,6 +66,7 @@
                         @if($notif->tipe == 'peminjaman') bg-info 
                         @elseif($notif->tipe == 'pengembalian') bg-success 
                         @elseif($notif->tipe == 'denda') bg-danger 
+                        @elseif($notif->tipe == 'pengingat') bg-warning
                         @else bg-secondary 
                         @endif">
                         <i class="fas fa-bell text-white"></i>
@@ -75,19 +78,7 @@
                     </div>
 
                     <span class="font-weight-bold">
-                        @if ($user->role == 'admin')
-                            @if($notif->tipe == 'peminjaman')
-                                Permintaan peminjaman dari <strong>{{ $notif->nama_user }}</strong>
-                            @elseif($notif->tipe == 'pengembalian')
-                                <strong>{{ $notif->nama_user }}</strong> telah mengembalikan aset.
-                            @elseif($notif->tipe == 'denda')
-                                <strong>{{ $notif->nama_user }}</strong> terkena denda.
-                            @else
-                                {{ $notif->pesan }}
-                            @endif
-                        @else
-                            {{ $notif->pesan }}
-                        @endif
+                        {{ $notif->pesan }}
                     </span>
                 </div>
             </a>
@@ -98,37 +89,6 @@
         <a class="dropdown-item text-center small text-gray-500" href="{{ route('peminjaman.index') }}">Lihat Semua</a>
     </div>
 </li>
-
-
-        {{-- NOTIFIKASI SUARA PERLU DI PERBAIKI --}}
-        <audio id="notifSound" src="{{ asset('audio/notif.mp3') }}"></audio>
-        </li>
-
-        <script>
-            document.addEventListener("DOMContentLoaded", function() {
-                const badge = document.querySelector('.badge-counter');
-                const audio = document.getElementById('notifSound');
-
-                if (!badge || !audio) return;
-
-                const currentNotifId = parseInt(badge.dataset.lastId || '0');
-                const lastSeenId = parseInt(localStorage.getItem('lastNotifId') || '0');
-
-                // Tambahkan pengecekan apakah ini "navigation" baru (bukan reload/back)
-                const navType = performance.getEntriesByType("navigation")[0].type;
-
-                // Hanya bunyi jika:
-                // 1. Ada notifikasi baru
-                // 2. Halaman datang dari navigasi submit/form (bukan reload atau back/forward)
-                if (currentNotifId > lastSeenId && navType === "navigate") {
-                    audio.play().catch(() => {});
-                    localStorage.setItem('lastNotifId', currentNotifId);
-                }
-            });
-        </script>
-
-
-
 
         </a>
         <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
@@ -146,57 +106,64 @@
         </div>
         </li>
         <li class="nav-item dropdown no-arrow mx-1">
-            <!-- Ikon pesan dan jumlah pesan -->
-            <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button"
-                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <i class="fas fa-envelope fa-fw"></i>
 
-                @isset($pesans)
-                    @php $jumlahPesan = $pesans->count(); @endphp
-                    @if ($jumlahPesan > 0)
-                        <span class="badge badge-warning badge-counter">{{ $jumlahPesan }}</span>
-                    @endif
-                @endisset
-            </a>
+<!-- Ikon pesan dan jumlah pesan -->
+<a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button"
+    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    <i class="fas fa-envelope fa-fw"></i>
 
-            <!-- Dropdown Pesan -->
-            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                aria-labelledby="messagesDropdown">
+    @isset($pesans)
+        @php $jumlahPesan = $pesans->count(); @endphp
+        @if ($jumlahPesan > 0)
+            <span class="badge badge-warning badge-counter" id="messageCount">{{ $jumlahPesan }}</span>
+        @else
+            <span class="badge badge-warning badge-counter d-none" id="messageCount">0</span>
+        @endif
+    @else
+        <span class="badge badge-warning badge-counter d-none" id="messageCount">0</span>
+    @endisset
+</a>
 
-                <h6 class="dropdown-header">Message Center</h6>
+<!-- Dropdown Pesan -->
+<div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+    aria-labelledby="messagesDropdown">
 
-                @isset($pesans)
-                    @forelse($pesans->take(5) as $pesan)
-                        <a class="dropdown-item d-flex align-items-center" href="#">
-                            <div class="dropdown-list-image mr-3">
-                                <img class="rounded-circle" src="{{ $pesan->pengirim->foto ?? asset('img/default.png') }}"
-                                    style="max-width: 60px;" alt="Foto Pengirim">
-                                <div class="status-indicator bg-success"></div>
-                            </div>
-                            <div class="font-weight-bold">
-                                <div class="text-truncate">{{ Str::limit($pesan->isi_pesan, 50) }}</div>
-                                <div class="small text-gray-500">
-                                    {{ $pesan->pengirim->name ?? 'Tidak diketahui' }} ·
-                                    {{ $pesan->created_at->diffForHumans() }}
-                                </div>
-                            </div>
-                        </a>
-                    @empty
-                        <div class="dropdown-item text-center small text-gray-500">
-                            Tidak ada pesan baru
-                        </div>
-                    @endforelse
-                @else
-                    <div class="dropdown-item text-center small text-gray-500">
-                        Gagal memuat pesan
+    <h6 class="dropdown-header">Message Center</h6>
+
+    @isset($pesans)
+        @forelse($pesans->take(5) as $pesan)
+            <a class="dropdown-item d-flex align-items-center" href="#">
+                <div class="dropdown-list-image mr-3">
+                    <img class="rounded-circle" src="{{ $pesan->pengirim->foto ?? asset('img/default.png') }}"
+                        style="max-width: 60px;" alt="Foto Pengirim">
+                    <div class="status-indicator bg-success"></div>
+                </div>
+                <div class="font-weight-bold">
+                    <div class="text-truncate">{{ Str::limit($pesan->isi_pesan, 50) }}</div>
+                    <div class="small text-gray-500">
+                        {{ $pesan->pengirim->name ?? 'Tidak diketahui' }} ·
+                        {{ $pesan->created_at->diffForHumans() }}
                     </div>
-                @endisset
-
-                <a class="dropdown-item text-center small text-gray-500" href="{{ route('pesan.index') }}">
-                    Lihat Semua Pesan
-                </a>
+                </div>
+            </a>
+        @empty
+            <div class="dropdown-item text-center small text-gray-500">
+                Tidak ada pesan baru
             </div>
-        </li>
+        @endforelse
+    @else
+        <div class="dropdown-item text-center small text-gray-500">
+            Gagal memuat pesan
+        </div>
+    @endisset
+
+    <a class="dropdown-item text-center small text-gray-500" href="{{ route('pesan.index') }}">
+        Lihat Semua Pesan
+    </a>
+</div>
+
+
+
 
         <li class="nav-item dropdown no-arrow mx-1">
             <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button"
@@ -244,24 +211,43 @@
                 </a>
                 <a class="dropdown-item text-center small text-gray-500" href="#">View All Taks</a>
             </div>
-        <li class="nav-item dropdown no-arrow">
-            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <img class="img-profil rounded-circle"
-                    src="{{ Auth::user()->foto ? asset('storage/foto_profil/' . Auth::user()->foto) : asset('back-end/img/boy.png') }}"
-                    style="max-width: 40px; height: 40px; object-fit: cover;">
+       <li class="nav-item dropdown no-arrow">
+    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 
-                <span class="ml-2 d-none d-lg-inline text-white"
-                    style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 16px; font-weight: 600;">
-                    {{ Auth::user()->name }}
-                </span>
+        <img class="img-profil"
+            src="{{ Auth::user()->foto ? asset('storage/foto_profil/' . Auth::user()->foto) : asset('back-end/img/boy.png') }}"
+            alt="Foto Profil">
 
-            </a>
-            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
-                <a class="dropdown-item" href="{{ route('profil.index') }}">
-                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                    Profil
-                </a>
+        <span class="ml-2 d-none d-lg-inline text-white"
+            style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 16px; font-weight: 600;">
+            {{ Auth::user()->name }}
+        </span>
+    </a>
+
+    <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
+        <a class="dropdown-item" href="{{ route('profil.index') }}">
+            <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+            Profil
+        </a>
+
+
+<style>
+    .img-profil {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%; /* bulat sempurna */
+        object-fit: cover;  /* isi penuh tanpa distorsi */
+        border: 2px solid #fff; /* garis pinggir putih biar rapi */
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15); /* bayangan lembut */
+    }
+
+    .img-profil:hover {
+        transform: scale(1.05);
+        transition: all 0.2s ease-in-out;
+    }
+</style>
+
 
                 <div class="dropdown-divider"></div>
                 <a class="dropdown-item" href="javascript:void(0);" data-toggle="modal" data-target="#logoutModal">

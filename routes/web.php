@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KategoriAssetController;
 use App\Http\Controllers\AssetController;
@@ -12,34 +13,49 @@ use App\Http\Controllers\DendaController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PesanController;
-use App\Mail\PengembalianTerlambatMail;
-use Illuminate\Support\Facades\Mail;
+use App\Mail\TelatEmail;
+use App\Mail\PengingatEmail;
 use App\Models\Peminjaman;
+
 
 Route::get('/', function () {
     return view('home');
 });
 
 // ==================== LOGIN DAN REGISTER (TERBUKA) ====================
-// Login dan logout
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Registrasi (umum)
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [AuthController::class, 'register'])->name('register.store');
 
-Route::get('/tes-email-terlambat', [NotifikasiController::class, 'cekPengembalianTerlambat']);
+// ==================== ROUTE UNTUK TEST EMAIL (OPSIONAL) ====================
+// Route::get('/tes-email-terlambat', function () {
+//    $user = (object)[
+//        'name' => 'Nasir',
+ //       'email' => 'emailtujuanmu@gmail.com', // ← ganti dengan email kamu
+  //  ];
+
+  //  $peminjaman = (object)[
+   //         'user' => $user,
+     //       'aset' => (object)['nama_asset' => 'Proyektor Epson'],
+       //     'tanggal_kembali' => now()->addDay()->toDateString()
+       // ];
+
+    //    $pesan = 'Ini adalah email percobaan untuk notifikasi keterlambatan atau pengingat.';
+
+ //   Mail::to($user->email)->send(new TelatEmail($peminjaman));
+  //  Mail::to($user->email)->send(new PengingatEmail($peminjaman));
+  //      return '✅ Email tes sudah dikirim ke: ' . $user->email;
+  //  });
+
+
 // ==================== HANYA BISA DIAKSES SETELAH LOGIN ====================
 Route::middleware(['auth'])->group(function () {
-    // DASHBOARD
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // KATEGORI ASET
     Route::resource('kategori', KategoriAssetController::class);
-
-    // DAFTAR ASET
     Route::resource('asset', AssetController::class);
 
     // PEMINJAMAN
@@ -54,8 +70,6 @@ Route::middleware(['auth'])->group(function () {
     // NOTIFIKASI
     Route::get('/cek-notifikasi', [PeminjamanController::class, 'cekNotifikasi']);
 
-    Route::get('/cek-pengembalian-terlambat', [NotifikasiController::class, 'cekPengembalianTerlambat']);
-
     // PENGEMBALIAN
     Route::get('/pengembalian/create', [PengembalianController::class, 'create'])->name('pengembalian.form');
     Route::post('/pengembalian/store', [PengembalianController::class, 'store'])->name('pengembalian.store');
@@ -64,11 +78,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/pengembalian/{id}/edit', [PengembalianController::class, 'edit'])->name('pengembalian.edit');
     Route::put('/pengembalian/{id}', [PengembalianController::class, 'update'])->name('pengembalian.update');
 
-    // USER MANAGEMENT (KHUSUS ADMIN)
+    // USER MANAGEMENT
     Route::resource('users', UserController::class);
     Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
     Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
-  Route::post('/users/{id}/block', [UserController::class, 'toggleBlock'])->name('users.block');
+    Route::post('/users/{id}/block', [UserController::class, 'toggleBlock'])->name('users.block');
 
     // DENDA
     Route::get('/denda', [DendaController::class, 'index'])->name('denda.index');
@@ -76,11 +90,11 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/denda/{id_pengembalian}/bayar', [DendaController::class, 'bayar'])->name('denda.bayar');
     Route::delete('/pembayaran_denda/{id}', [DendaController::class, 'destroy'])->name('pembayaran_denda.destroy');
 
-    // LAPORAN PDF
+    // LAPORAN
     Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.cetak');
     Route::get('/laporan/pdf', [LaporanController::class, 'cetakPDF'])->name('laporan.pdf');
 
-    // PROFIL USER LOGIN
+    // PROFIL
     Route::get('/profil', [UserController::class, 'profil'])->name('profil.index');
     Route::post('/profil/update', [UserController::class, 'updateProfil'])->name('profil.update');
     Route::delete('/profil/hapus-foto', [UserController::class, 'hapusFoto'])->name('profil.hapusFoto');
@@ -91,4 +105,19 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/pesan/kirim', [PesanController::class, 'kirim'])->name('pesan.kirim');
     Route::get('/pesan/baru', [PesanController::class, 'fetchPesanBaru'])->name('pesan.fetch');
     Route::post('/pesan/hapus-semua', [PesanController::class, 'hapusSemua'])->name('pesan.hapusSemua');
+
+
+   // Jalankan pengingat dan notifikasi keterlambatan (manual / testing)
+Route::get('/pengingat-dan-terlambat', [NotifikasiController::class, 'pengingatDanTerlambatPengembalian']);
+Route::get('/cek-notifikasi-baru', [App\Http\Controllers\NotifikasiController::class, 'cekNotifikasiBaru'])->name('cek.notifikasi.baru');
+
+Route::get('/pesan-count', function() {
+    $count = DB::table('pesans')
+        ->where('penerima_id', Auth::id())
+        ->whereNull('dibaca_pada') // opsional: hanya hitung yang belum dibaca
+        ->count();
+    return response()->json(['count' => $count]);
+})->name('pesan.count');
+
+Route::get('/pesan-count', [PesanController::class, 'count'])->name('pesan.count');
 });

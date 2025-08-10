@@ -35,6 +35,7 @@
           <li><a href="#hero" class="active">Home</a></li>
           <li><a href="#about">Tentang</a></li>
           <li><a href="#services">Layanan</a></li>
+          <li><a href="#how-to-borrow">Cara Peminjaman</a></li>
           <li><a href="#contact">Kontak</a></li>
         </ul>
         <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
@@ -146,6 +147,57 @@
     </div>
   </section>
 
+ <!-- How to Borrow Section -->
+<section id="how-to-borrow" class="how-to-borrow section bg-light">
+  <div class="container" data-aos="fade-up">
+    <div class="section-title">
+      <h2>Cara Peminjaman Aset</h2>
+      <p>Panduan resmi pengajuan peminjaman aset desa melalui sistem</p>
+    </div>
+    <div class="row">
+      <div class="col-lg-12">
+        <ol class="list-group list-group-numbered mb-4">
+          <li class="list-group-item">
+            <strong>Login ke Sistem</strong><br>
+            Silakan masuk ke akun Anda melalui menu <em>Login</em> di pojok kanan atas. Jika belum memiliki akun, lakukan registrasi terlebih dahulu sesuai data identitas Anda.
+          </li>
+          <li class="list-group-item">
+            <strong>Buka Form Peminjaman</strong><br>
+            Setelah berhasil login, buka menu <em>Form Peminjaman</em> untuk mengisi formulir peminjaman aset.
+          </li>
+          <li class="list-group-item">
+            <strong>Lengkapi Data Peminjaman</strong><br>
+            Isi formulir dengan lengkap, mulai dari jenis aset yang ingin dipinjam, keperluan peminjaman, tanggal mulai dan tanggal pengembalian.
+          </li>
+          <li class="list-group-item">
+            <strong>Unggah Foto KTP</strong><br>
+            Upload foto KTP Anda sebagai syarat administrasi. Pastikan foto KTP terlihat jelas dan sesuai dengan data yang Anda isi.
+          </li>
+          <li class="list-group-item">
+            <strong>Kirim Permohonan</strong><br>
+            Setelah data terisi lengkap, klik tombol <em>Kirim</em> untuk mengajukan permohonan. Permintaan Anda akan masuk ke sistem dan menunggu persetujuan dari admin desa.
+          </li>
+          <li class="list-group-item">
+            <strong>Menunggu Persetujuan</strong><br>
+            Anda dapat memantau status pengajuan melalui dashboard akun Anda. Sistem akan memberikan notifikasi apabila permohonan Anda disetujui atau ditolak.
+          </li>
+          <li class="list-group-item">
+            <strong>Ambil Aset</strong><br>
+            Setelah disetujui, Anda dapat mengambil aset sesuai dengan jadwal dan ketentuan yang telah ditentukan oleh pihak desa.
+          </li>
+        </ol>
+        <p class="fst-italic">
+          Harap menjaga kondisi aset selama masa peminjaman. Segala bentuk kerusakan atau keterlambatan pengembalian akan dikenakan denda sesuai peraturan yang berlaku.
+        </p>
+        <p>
+          Jika Anda mengalami kesulitan atau memiliki pertanyaan, silakan hubungi admin melalui informasi kontak yang tersedia di bawah ini.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
   <!-- Contact Section -->
   <section id="contact" class="contact section">
     <div class="container" data-aos="fade-up">
@@ -169,7 +221,7 @@
           <div class="info-box">
             <i class="bi bi-envelope-fill"></i>
             <h3>Email</h3>
-            <p>asetdesa@example.com</p>
+            <p>asetdesaseuat@gmail.com</p>
           </div>
         </div>
       </div>

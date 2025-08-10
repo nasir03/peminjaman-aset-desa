@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Pesan;
@@ -8,14 +9,15 @@ use Illuminate\Support\Facades\Auth;
 
 class PesanController extends Controller
 {
+    // Tampilkan halaman pesan
     public function index()
     {
         $userLogin = Auth::user();
 
-        // Jika admin: bisa kirim ke siapa pun
+        // Jika admin: bisa kirim ke siapa pun. Jika warga: hanya bisa ke admin
         $users = $userLogin->role === 'admin'
             ? User::where('id', '!=', $userLogin->id)->get()
-            : User::where('role', 'admin')->get(); // warga hanya ke admin
+            : User::where('role', 'admin')->get();
 
         $pesans = Pesan::where(function ($query) {
                 $query->where('pengirim_id', Auth::id())
@@ -27,6 +29,7 @@ class PesanController extends Controller
         return view('pesan.index', compact('users', 'pesans'));
     }
 
+    // Kirim pesan
     public function kirim(Request $request)
     {
         $request->validate([
@@ -51,6 +54,7 @@ class PesanController extends Controller
         return back()->with('success', 'Pesan berhasil dikirim.');
     }
 
+    // Ambil pesan baru (untuk notifikasi real-time)
     public function fetchPesanBaru()
     {
         $pesans = Pesan::with('pengirim')
@@ -59,7 +63,7 @@ class PesanController extends Controller
             ->orderBy('created_at', 'asc')
             ->get();
 
-        // Tandai semua pesan sebagai sudah dibaca
+        // Tandai sebagai sudah dibaca
         foreach ($pesans as $pesan) {
             $pesan->is_read = true;
             $pesan->save();
@@ -67,10 +71,45 @@ class PesanController extends Controller
 
         return response()->json($pesans);
     }
+
+    // Hapus pesan tunggal
+    public function hapus($id)
+    {
+        $pesan = Pesan::findOrFail($id);
+
+        if (
+            Auth::id() === $pesan->penerima_id ||
+            Auth::id() === $pesan->pengirim_id ||
+            Auth::user()->role === 'admin'
+        ) {
+            $pesan->delete();
+            return back()->with('success', 'Pesan berhasil dihapus.');
+        }
+
+        return back()->with('error', 'Anda tidak diizinkan menghapus pesan ini.');
+    }
+
+    // Hapus semua pesan untuk user saat ini
     public function hapusSemua()
-{
-    Pesan::where('penerima_id', Auth::id())->delete();
-    return redirect()->back()->with('success', 'Semua pesan berhasil dihapus.');
+    {
+        $userId = Auth::id();
+
+        Pesan::where('pengirim_id', $userId)
+            ->orWhere('penerima_id', $userId)
+            ->delete();
+
+        return back()->with('success', 'Semua pesan berhasil dihapus.');
+    
 }
+  public function count()
+    {
+        $count = DB::table('pesans')
+            ->where('penerima_id', Auth::id())
+            ->whereNull('dibaca_pada') // kalau mau hanya pesan belum dibaca
+            ->count();
+
+        return response()->json(['count' => $count]);
+    }
+
 
 }

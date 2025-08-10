@@ -22,6 +22,7 @@ class Peminjaman extends Model
         'jenis_kelamin',
         'status',
         'keperluan_peminjaman',
+        'foto_ktp',
         'catatan_admin',
         'created_at',
     ];

@@ -4,7 +4,7 @@
 <div class="container">
     <h2>Edit Data Peminjaman</h2>
 
-    <form action="{{ route('peminjaman.update', $data->id_peminjaman) }}" method="POST">
+    <form action="{{ route('peminjaman.update', $data->id_peminjaman) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 
@@ -72,6 +72,21 @@
                 <div class="form-group">
                     <label>Alamat</label>
                     <textarea name="alamat" class="form-control" required>{{ old('alamat', $data->alamat ?? $data->user->alamat ?? '') }}</textarea>
+                </div>
+
+                <!-- Tambahan Upload Foto KTP -->
+                <div class="form-group">
+                    <label>Foto KTP Saat Ini</label><br>
+                    @if ($data->foto_ktp)
+                        <a href="{{ asset('storage/' . $data->foto_ktp) }}" target="_blank">Lihat KTP</a>
+                    @else
+                        Tidak ada foto KTP
+                    @endif
+                </div>
+
+                <div class="form-group">
+                    <label>Ganti Foto KTP (Opsional)</label>
+                    <input type="file" name="foto_ktp" class="form-control-file" accept="image/*">
                 </div>
             </div>
         </div>

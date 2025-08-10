@@ -18,5 +18,3 @@ class Pesan extends Model
         return $this->belongsTo(User::class, 'penerima_id');
     }
 }
-
-

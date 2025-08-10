@@ -119,7 +119,7 @@
                             <th>No Telepon</th>
                             <th>Nama Aset</th>
                             <th>Jumlah Pinjam</th>
-                            <th>Catatan</th>
+                          
                             <th>Tanggal Kembali</th>
                         </tr>
                     </thead>
@@ -131,7 +131,7 @@
                                 <td>{{ $data->peminjaman->user->no_telepon ?? '-' }}</td>
                                 <td>{{ $data->peminjaman->asset->nama_asset ?? '-' }}</td>
                                 <td>{{ $data->peminjaman->jumlah_pinjam ?? '-' }}</td>
-                                <td>{{ $data->peminjaman->catatan_admin ?? '-' }}</td>
+                                
                                 <td>{{ \Carbon\Carbon::parse($data->tanggal_pengembalian)->format('d-m-Y') }}</td>
                             </tr>
                         @empty

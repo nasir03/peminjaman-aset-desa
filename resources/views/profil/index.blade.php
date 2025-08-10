@@ -104,16 +104,15 @@
     .photo-box {
         width: 200px;
         height: 200px;
-        margin: 0 auto;
-        border: 3px dashed #ccc;
-        border-radius: 20px;
+        margin: 0 auto 15px;
+        border: 3px solid #4a90e2;
+        border-radius: 50%;
         overflow: hidden;
         display: flex;
         align-items: center;
         justify-content: center;
         background-color: #f9f9f9;
-        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
-        margin-bottom: 15px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
         position: relative;
     }
 
@@ -132,10 +131,12 @@
         font-size: 14px;
         margin-top: 10px;
         cursor: pointer;
+        transition: 0.3s;
     }
 
     .btn-delete:hover {
         background-color: #c0392b;
+        transform: scale(1.05);
     }
 
     .file-info {
@@ -153,12 +154,13 @@
         border-radius: 10px;
         color: #fff;
         box-shadow: 0 6px 15px rgba(74, 144, 226, 0.3);
-        transition: background 0.3s ease;
+        transition: 0.3s ease;
     }
 
     .btn-primary:hover {
         background-color: #3b7cc4;
         box-shadow: 0 8px 20px rgba(74, 144, 226, 0.5);
+        transform: translateY(-2px);
     }
 
     @media (max-width: 768px) {

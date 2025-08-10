@@ -19,7 +19,8 @@ return new class extends Migration
             $table->unsignedBigInteger('id_peminjaman'); // ID Peminjaman terkait
 
             // ✅ TAMBAHAN: tipe notifikasi (WAJIB ADA)
-            $table->enum('tipe', ['peminjaman', 'pengembalian', 'denda'])->default('peminjaman');
+          $table->enum('tipe', ['peminjaman', 'pengembalian', 'denda', 'pengingat'])->default('peminjaman');
+
 
             $table->string('pesan');
             $table->boolean('dibaca')->default(false);

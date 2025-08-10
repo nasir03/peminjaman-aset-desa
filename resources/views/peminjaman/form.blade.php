@@ -28,12 +28,11 @@
             @endif
 
             <!-- Form Mulai -->
-            <form method="POST" action="{{ route('peminjaman.store') }}">
+            <form method="POST" action="{{ route('peminjaman.store') }}" enctype="multipart/form-data">
                 @csrf
                 <div class="row">
                     <!-- KIRI -->
                     <div class="col-md-6">
-                        <!-- Nama Peminjam Otomatis -->
                         <div class="form-group">
                             <label for="nama_user">Nama Peminjam</label>
                             <input type="text" class="form-control" value="{{ Auth::user()->name }}" readonly>
@@ -93,8 +92,8 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="catatan_admin">Catatan (untuk admin)</label>
-                            <textarea name="catatan_admin" class="form-control" rows="3"></textarea>
+                            <label for="foto_ktp">Upload Foto KTP (untuk persyaratan)</label>
+                            <input type="file" name="foto_ktp" class="form-control-file" accept="image/*" required>
                         </div>
                     </div>
                 </div>
@@ -108,18 +107,4 @@
         </div>
     </div>
 </div>
-
-<!-- Suara -->
-<audio id="notifSound" src="{{ asset('audio/notif.mp3') }}"></audio>
-
-@if(session('success'))
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const audio = document.getElementById('notifSound');
-            if (audio) {
-                audio.play().catch(() => {});
-            }
-        });
-    </script>
-@endif
 @endsection

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\Pengembalian;
 use App\Models\Peminjaman;
 use App\Models\User;
+use App\Models\Notifikasi;
 use Carbon\Carbon;
 
 class PengembalianController extends Controller
@@ -40,8 +41,7 @@ class PengembalianController extends Controller
         $peminjaman = Peminjaman::with('user', 'asset')->findOrFail($request->id_peminjaman);
         $user = $peminjaman->user;
         $aset = $peminjaman->asset;
-       $hargaAset = $aset->harga_aset ?? 0;
-
+        $hargaAset = $aset->harga_aset ?? 0;
 
         $jumlahPinjam = $peminjaman->jumlah_pinjam;
         $jumlahKembali = $request->jumlah_kembali;
@@ -50,15 +50,21 @@ class PengembalianController extends Controller
             return redirect()->back()->with('error', 'Jumlah kembali tidak boleh melebihi jumlah pinjam.');
         }
 
+        // ===== Perhitungan Denda =====
         $denda = 0;
-        $tglKembali = Carbon::parse($peminjaman->tanggal_kembali);
-        $tglPengembalian = Carbon::parse($request->tanggal_pengembalian);
 
-        if ($tglPengembalian->greaterThan($tglKembali)) {
-            $hariTerlambat = $tglPengembalian->diffInDays($tglKembali);
-            $denda += $hariTerlambat * 5000;
-        }
+        // Pastikan hanya membandingkan tanggal tanpa jam
+        $tglKembali = Carbon::parse($peminjaman->tanggal_kembali)->startOfDay();
+        $tglPengembalian = Carbon::parse($request->tanggal_pengembalian)->startOfDay();
 
+        // Hitung denda keterlambatan (selalu dihitung walaupun kondisi baik)
+      if ($tglPengembalian->gt($tglKembali)) {
+    $hariTerlambat = $tglKembali->diffInDays($tglPengembalian); 
+    $denda += $hariTerlambat * 5000;
+}
+
+
+        // Denda berdasarkan kondisi aset
         switch ($request->kondisi_asset) {
             case 'rusak ringan':
                 $denda += $jumlahKembali * $hargaAset * 0.3;
@@ -71,6 +77,7 @@ class PengembalianController extends Controller
                 break;
         }
 
+        // Denda kalau jumlah kembali kurang dari pinjam
         if ($jumlahKembali < $jumlahPinjam) {
             $jumlahTidakKembali = $jumlahPinjam - $jumlahKembali;
             $denda += $jumlahTidakKembali * $hargaAset;
@@ -78,11 +85,13 @@ class PengembalianController extends Controller
 
         $denda = max(0, round($denda));
 
+        // Upload foto kondisi jika ada
         $fotoKondisiPath = null;
         if ($request->hasFile('foto_kondisi')) {
             $fotoKondisiPath = $request->file('foto_kondisi')->store('foto_kondisi_aset', 'public');
         }
 
+        // Simpan data pengembalian
         Pengembalian::create([
             'id_peminjaman'        => $request->id_peminjaman,
             'tanggal_pengembalian' => $request->tanggal_pengembalian,
@@ -95,12 +104,14 @@ class PengembalianController extends Controller
             'updated_at'           => now(),
         ]);
 
+        // Update status peminjaman
         $peminjaman->status = 'dikembalikan';
         $peminjaman->save();
 
+        // Kirim notifikasi ke admin
         $admin = User::where('role', 'admin')->first();
         if ($admin) {
-            DB::table('notifications')->insert([
+            Notifikasi::create([
                 'id_user'        => $user->id,
                 'penerima_id'    => $admin->id,
                 'id_peminjaman'  => $peminjaman->id_peminjaman,
@@ -112,12 +123,25 @@ class PengembalianController extends Controller
             ]);
 
             if ($denda > 0) {
-                DB::table('notifications')->insert([
+                // Notifikasi ke admin
+                Notifikasi::create([
                     'id_user'        => $user->id,
                     'penerima_id'    => $admin->id,
                     'id_peminjaman'  => $peminjaman->id_peminjaman,
                     'tipe'           => 'denda',
                     'pesan'          => 'Pengembalian aset oleh ' . $user->name . ' dikenakan denda Rp ' . number_format($denda, 0, ',', '.'),
+                    'dibaca'         => false,
+                    'created_at'     => now(),
+                    'updated_at'     => now(),
+                ]);
+
+                // Notifikasi ke user
+                Notifikasi::create([
+                    'id_user'        => $admin->id,
+                    'penerima_id'    => $user->id,
+                    'id_peminjaman'  => $peminjaman->id_peminjaman,
+                    'tipe'           => 'denda',
+                    'pesan'          => 'Anda dikenakan denda sebesar Rp ' . number_format($denda, 0, ',', '.') . ' karena keterlambatan atau kondisi aset tidak baik.',
                     'dibaca'         => false,
                     'created_at'     => now(),
                     'updated_at'     => now(),
