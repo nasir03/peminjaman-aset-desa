@@ -41,54 +41,60 @@
     @include('back-end.partials.scripts')
     <!-- End of Script -->
 
-    <!-- ========== SUARA NOTIFIKASI PEMINJAMAN ========== -->
-    <audio id="notifSound" src="{{ asset('audio/notif.mp3') }}" preload="auto"></audio>
-    <script>
-        function playNotifSound() {
-            const audio = document.getElementById("notifSound");
-            if (audio) {
+    <!-- SUARA NOTIFIKASI PEMINJAMAN -->
+<audio id="notifSound" src="{{ asset('audio/notif.mp3') }}" preload="auto"></audio>
+
+<script>
+    const audio = document.getElementById("notifSound");
+
+    // Unlock audio untuk autoplay browser
+    function unlockAudio() {
+        if (audio) {
+            audio.play().then(() => {
+                audio.pause();
                 audio.currentTime = 0;
-                audio.volume = 1.0;
-                audio.play().catch((error) => {
-                    console.warn("Gagal memutar suara:", error);
-                });
-            }
+                console.log("✅ Audio notifikasi siap diputar.");
+                document.removeEventListener("click", unlockAudio);
+            }).catch(e => console.log("⚠️ Autoplay diblokir:", e));
         }
+    }
+    document.addEventListener("click", unlockAudio);
 
-        function checkNewNotifications() {
-            fetch("{{ route('cek.notifikasi.baru') }}")
-                .then(response => response.json())
-                .then(data => {
-                    const jumlahBaru = parseInt(data.jumlah);
-                    const jumlahLama = parseInt(sessionStorage.getItem("lastNotifCount") || "0");
+    // Fungsi mainkan notifikasi
+    function playNotifSound() {
+        if (!audio) return;
+        audio.currentTime = 0;
+        audio.volume = 1.0;
+        audio.play().catch(err => console.warn("Gagal memutar suara:", err));
+    }
 
-                    if (jumlahBaru > jumlahLama) {
-                        console.log("🔔 Notifikasi baru terdeteksi!");
-                        playNotifSound();
-                    }
-                    sessionStorage.setItem("lastNotifCount", jumlahBaru);
-                })
-                .catch(error => console.error("Gagal mengambil notifikasi:", error));
-        }
+    // Fungsi cek notifikasi baru dari server
+    let lastNotifCount = parseInt(sessionStorage.getItem("lastNotifCount") || "0");
 
-        document.addEventListener("click", function unlockNotifAudio() {
-            const audio = document.getElementById("notifSound");
-            if (audio) {
-                audio.play().then(() => {
-                    audio.pause();
-                    console.log("✅ Audio notifikasi siap diputar.");
-                    document.removeEventListener("click", unlockNotifAudio);
-                }).catch((e) => console.log("⚠️ Autoplay diblokir:", e));
-            }
-        });
+    function checkNewNotifications() {
+        fetch("{{ route('cek.notifikasi.baru') }}")
+            .then(res => res.json())
+            .then(data => {
+                const jumlahBaru = parseInt(data.jumlah || 0);
 
-        document.addEventListener("DOMContentLoaded", function () {
-            checkNewNotifications();
-            setInterval(checkNewNotifications, 10000);
-        });
-    </script>
+                // Hanya mainkan suara jika jumlah notifikasi bertambah
+                if (jumlahBaru > lastNotifCount) {
+                    console.log("🔔 Notifikasi baru terdeteksi!");
+                    playNotifSound();
+                }
 
-    
+                lastNotifCount = jumlahBaru;
+                sessionStorage.setItem("lastNotifCount", lastNotifCount);
+            })
+            .catch(err => console.error("Gagal mengambil notifikasi:", err));
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        checkNewNotifications();
+        setInterval(checkNewNotifications, 10000); // cek tiap 10 detik
+    });
+</script>
+
 
     <!-- FontAwesome (Opsional) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/fontawesome.min.css">

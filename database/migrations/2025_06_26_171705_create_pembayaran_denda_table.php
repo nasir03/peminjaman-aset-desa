@@ -16,6 +16,7 @@ return new class extends Migration
             $table->date('tanggal_bayar');
             $table->text('keterangan')->nullable();
             $table->string('foto_pembayaran')->nullable(); // sudah diganti dari bukti_pembayaran
+            $table->enum('status', ['pending', 'lunas', 'belum_lunas'])->default('pending');
             $table->timestamps();
 
             $table->foreign('id_pengembalian')

@@ -56,6 +56,7 @@ class DendaController extends Controller
             'tanggal_bayar'     => $request->tanggal_bayar,
             'keterangan'        => $request->keterangan,
             'foto_pembayaran'   => $fileName,
+            'status'            => 'pending'
         ]);
 
         $pengembalian = Pengembalian::with(['peminjaman.user', 'peminjaman.asset'])->findOrFail($id_pengembalian);
@@ -75,13 +76,13 @@ class DendaController extends Controller
             ]);
         }
 
-        // Kirim notifikasi ke WARGA
+        // Kirim notifikasi ke WARGA (konfirmasi sudah dikirim)
         Notifikasi::create([
             'id_user'       => Auth::id(),
             'penerima_id'   => $user->id,
             'id_peminjaman' => $pengembalian->id_peminjaman,
             'tipe'          => 'denda',
-            'pesan'         => '📄 Bukti pembayaran denda sebesar Rp ' . number_format($request->jumlah_dibayar, 0, ',', '.') . ' telah kami terima. Terima kasih.',
+            'pesan'         => '📄 Bukti pembayaran denda sebesar Rp ' . number_format($request->jumlah_dibayar, 0, ',', '.') . ' telah kami terima. Menunggu verifikasi admin.',
             'dibaca'        => false,
         ]);
 
@@ -99,5 +100,51 @@ class DendaController extends Controller
         $pembayaran->delete();
 
         return redirect()->back()->with('success', 'Data pembayaran denda berhasil dihapus.');
+    }
+
+    public function setujui($id)
+    {
+        $denda = Denda::with('pengembalian.peminjaman.user', 'pengembalian.peminjaman.asset')->findOrFail($id);
+        $denda->status = 'lunas';
+        $denda->keterangan = 'Lunas';
+        $denda->save();
+
+        $user = $denda->pengembalian->peminjaman->user;
+        $aset = $denda->pengembalian->peminjaman->asset;
+
+        // Notifikasi ke warga
+        Notifikasi::create([
+            'id_user'       => Auth::id(),
+            'penerima_id'   => $user->id,
+            'id_peminjaman' => $denda->pengembalian->id_peminjaman,
+            'tipe'          => 'denda',
+            'pesan'         => '✅ Pembayaran denda untuk aset "' . $aset->nama_asset . '" sebesar Rp ' . number_format($denda->jumlah_dibayar, 0, ',', '.') . ' telah disetujui. Status: LUNAS.',
+            'dibaca'        => false,
+        ]);
+
+        return redirect()->back()->with('success', 'Pembayaran denda telah disetujui.');
+    }
+
+    public function tolak($id)
+    {
+        $denda = Denda::with('pengembalian.peminjaman.user', 'pengembalian.peminjaman.asset')->findOrFail($id);
+        $denda->status = 'belum_lunas';
+        $denda->keterangan = 'Belum Lunas';
+        $denda->save();
+
+        $user = $denda->pengembalian->peminjaman->user;
+        $aset = $denda->pengembalian->peminjaman->asset;
+
+        // Notifikasi ke warga
+        Notifikasi::create([
+            'id_user'       => Auth::id(),
+            'penerima_id'   => $user->id,
+            'id_peminjaman' => $denda->pengembalian->id_peminjaman,
+            'tipe'          => 'denda',
+            'pesan'         => '❌ Pembayaran denda untuk aset "' . $aset->nama_asset . '" sebesar Rp ' . number_format($denda->jumlah_dibayar, 0, ',', '.') . ' ditolak oleh admin. Silakan hubungi petugas desa.',
+            'dibaca'        => false,
+        ]);
+
+        return redirect()->back()->with('error', 'Pembayaran denda ditolak.');
     }
 }

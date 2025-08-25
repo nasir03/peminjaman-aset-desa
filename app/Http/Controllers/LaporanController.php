@@ -10,59 +10,74 @@ use PDF;
 
 class LaporanController extends Controller
 {
-   public function index(Request $request)
-{
-    $jenis = $request->input('jenis');
-    $bulan = $request->input('bulan');
-    $tahun = $request->input('tahun');
+    public function index(Request $request)
+    {
+        $jenis = $request->input('jenis');
+        $bulan = $request->input('bulan');
+        $tahun = $request->input('tahun');
 
-    $peminjamanQuery = Peminjaman::with(['user', 'asset']);
-    $pengembalianQuery = Pengembalian::with([
-        'peminjaman.user',
-        'peminjaman.asset',
-        'denda'
-    ]);
-
-    // Filter bulan/tahun terpisah (tidak harus dua-duanya)
-    if ($bulan) {
-        $peminjamanQuery->whereMonth('tanggal_pinjam', $bulan);
-        $pengembalianQuery->whereMonth('tanggal_pengembalian', $bulan);
-    }
-    if ($tahun) {
-        $peminjamanQuery->whereYear('tanggal_pinjam', $tahun);
-        $pengembalianQuery->whereYear('tanggal_pengembalian', $tahun);
-    }
-
-    if ($jenis === 'peminjaman') {
-        $peminjaman = $peminjamanQuery->get();
-        $pengembalian = collect();
-        $denda = collect();
-    } elseif ($jenis === 'pengembalian') {
-        $peminjaman = collect();
-        $pengembalian = $pengembalianQuery->get();
-        $denda = collect();
-    } elseif ($jenis === 'denda') {
-        $peminjaman = collect();
-        $pengembalian = collect();
+        $peminjamanQuery = Peminjaman::with(['user', 'asset']);
+        $pengembalianQuery = Pengembalian::with([
+            'peminjaman.user',
+            'peminjaman.asset',
+            'denda'
+        ]);
         $dendaQuery = Denda::with('pengembalian.peminjaman.user', 'pengembalian.peminjaman.asset');
 
+        // Filter bulan/tahun untuk peminjaman
         if ($bulan) {
-            $dendaQuery->whereHas('pengembalian', fn($q) => $q->whereMonth('tanggal_pengembalian', $bulan));
+            $peminjamanQuery->whereMonth('tanggal_pinjam', $bulan);
+            $pengembalianQuery->whereMonth('tanggal_pengembalian', $bulan);
         }
         if ($tahun) {
-            $dendaQuery->whereHas('pengembalian', fn($q) => $q->whereYear('tanggal_pengembalian', $tahun));
+            $peminjamanQuery->whereYear('tanggal_pinjam', $tahun);
+            $pengembalianQuery->whereYear('tanggal_pengembalian', $tahun);
         }
 
-        $denda = $dendaQuery->get();
-    } else {
-        $peminjaman = $peminjamanQuery->get();
-        $pengembalian = $pengembalianQuery->get();
-        $denda = Denda::with('pengembalian.peminjaman.user', 'pengembalian.peminjaman.asset')->get();
+        // Filter bulan/tahun untuk denda digabung dalam satu whereHas
+        if ($bulan || $tahun) {
+            $dendaQuery->whereHas('pengembalian', function ($q) use ($bulan, $tahun) {
+                if ($bulan) $q->whereMonth('tanggal_pengembalian', $bulan);
+                if ($tahun) $q->whereYear('tanggal_pengembalian', $tahun);
+            });
+        }
+
+        // Ambil data berdasarkan jenis laporan
+        if ($jenis === 'peminjaman') {
+            $peminjaman = $peminjamanQuery->get();
+            $pengembalian = collect();
+            $denda = collect();
+        } elseif ($jenis === 'pengembalian') {
+            $peminjaman = collect();
+            $pengembalian = $pengembalianQuery->get();
+            $denda = collect();
+        } elseif ($jenis === 'denda') {
+            $peminjaman = collect();
+            $pengembalian = collect();
+            $denda = $dendaQuery->get();
+
+            // Status otomatis
+            $denda->map(function ($item) {
+                $item->status_otomatis = $item->status === 'pending'
+                    ? 'Pending'
+                    : ($item->status === 'lunas' ? 'Lunas' : 'Belum Lunas');
+                return $item;
+            });
+        } else {
+            $peminjaman = $peminjamanQuery->get();
+            $pengembalian = $pengembalianQuery->get();
+            $denda = $dendaQuery->get();
+
+            $denda->map(function ($item) {
+                $item->status_otomatis = $item->status === 'pending'
+                    ? 'Pending'
+                    : ($item->status === 'lunas' ? 'Lunas' : 'Belum Lunas');
+                return $item;
+            });
+        }
+
+        return view('laporan.cetak', compact('peminjaman', 'pengembalian', 'denda'));
     }
-
-    return view('laporan.cetak', compact('peminjaman', 'pengembalian', 'denda'));
-}
-
 
     public function cetakPDF(Request $request)
     {
@@ -76,15 +91,25 @@ class LaporanController extends Controller
             'peminjaman.asset',
             'denda'
         ]);
+        $dendaQuery = Denda::with('pengembalian.peminjaman.user', 'pengembalian.peminjaman.asset');
 
-        if ($bulan && $tahun) {
-            $peminjamanQuery->whereMonth('tanggal_pinjam', $bulan)
-                            ->whereYear('tanggal_pinjam', $tahun);
-
-            $pengembalianQuery->whereMonth('tanggal_pengembalian', $bulan)
-                              ->whereYear('tanggal_pengembalian', $tahun);
+        // Filter bulan/tahun untuk PDF
+        if ($bulan) {
+            $peminjamanQuery->whereMonth('tanggal_pinjam', $bulan);
+            $pengembalianQuery->whereMonth('tanggal_pengembalian', $bulan);
+        }
+        if ($tahun) {
+            $peminjamanQuery->whereYear('tanggal_pinjam', $tahun);
+            $pengembalianQuery->whereYear('tanggal_pengembalian', $tahun);
+        }
+        if ($bulan || $tahun) {
+            $dendaQuery->whereHas('pengembalian', function ($q) use ($bulan, $tahun) {
+                if ($bulan) $q->whereMonth('tanggal_pengembalian', $bulan);
+                if ($tahun) $q->whereYear('tanggal_pengembalian', $tahun);
+            });
         }
 
+        // Ambil data berdasarkan jenis laporan
         if ($jenis === 'peminjaman') {
             $peminjaman = $peminjamanQuery->get();
             $pengembalian = collect();
@@ -96,20 +121,26 @@ class LaporanController extends Controller
         } elseif ($jenis === 'denda') {
             $peminjaman = collect();
             $pengembalian = collect();
-            $denda = Denda::with('pengembalian.peminjaman.user', 'pengembalian.peminjaman.asset');
+            $denda = $dendaQuery->get();
 
-            if ($bulan && $tahun) {
-                $denda->whereHas('pengembalian', function ($query) use ($bulan, $tahun) {
-                    $query->whereMonth('tanggal_pengembalian', $bulan)
-                          ->whereYear('tanggal_pengembalian', $tahun);
-                });
-            }
-
-            $denda = $denda->get();
+            // Status otomatis
+            $denda->map(function ($item) {
+                $item->status_otomatis = $item->status === 'pending'
+                    ? 'Pending'
+                    : ($item->status === 'lunas' ? 'Lunas' : 'Belum Lunas');
+                return $item;
+            });
         } else {
             $peminjaman = $peminjamanQuery->get();
             $pengembalian = $pengembalianQuery->get();
-            $denda = Denda::with('pengembalian.peminjaman.user', 'pengembalian.peminjaman.asset')->get();
+            $denda = $dendaQuery->get();
+
+            $denda->map(function ($item) {
+                $item->status_otomatis = $item->status === 'pending'
+                    ? 'Pending'
+                    : ($item->status === 'lunas' ? 'Lunas' : 'Belum Lunas');
+                return $item;
+            });
         }
 
         $pdf = PDF::loadView('laporan.cetak-pdf', compact('peminjaman', 'pengembalian', 'denda'));

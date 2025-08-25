@@ -14,11 +14,23 @@ use Carbon\Carbon;
 class PeminjamanController extends Controller
 {
     public function create()
-    {
-        $users = User::all();
-        $assets = Asset::all();
-        return view('peminjaman.form', compact('users', 'assets'));
+{
+    $users = User::all();
+    $assets = Asset::all();
+
+    // Hitung sisa aset
+    foreach ($assets as $asset) {
+        $dipinjam = DB::table('peminjaman')
+            ->where('id_asset', $asset->id_asset)
+            ->whereIn('status', ['pending', 'disetujui'])
+            ->sum('jumlah_pinjam');
+
+        $asset->sisa = $asset->jumlah - $dipinjam; // sisa stok
     }
+
+    return view('peminjaman.form', compact('users', 'assets'));
+}
+
 
     public function store(Request $request)
     {
@@ -28,7 +40,7 @@ class PeminjamanController extends Controller
             'tanggal_pinjam'       => 'required|date',
             'tanggal_kembali'      => 'required|date|after_or_equal:tanggal_pinjam',
             'keperluan_peminjaman' => 'required|string|max:255',
-            'foto_ktp'             => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'foto_ktp'             => 'required|image|mimes:jpeg,png,jpg|max:5120',
         ]);
 
         $fotoKtpPath = $request->file('foto_ktp')?->store('foto_ktp', 'public');
@@ -171,12 +183,12 @@ class PeminjamanController extends Controller
             'updated_at' => now(),
         ]);
 
-        DB::table('users')->where('id', $request->id_user)->update([
+       DB::table('users')->where('id', $request->id_user)->update([
             'no_telepon' => $request->no_telepon,
             'jenis_kelamin' => $request->jenis_kelamin,
             'alamat' => $request->alamat,
             'updated_at' => now(),
-        ]);
+        ]); 
 
         return redirect()->route('peminjaman.index')->with('success', 'Data berhasil diperbarui.');
     }

@@ -17,26 +17,29 @@
       overflow-x: hidden;
       height: 100vh;
     }
+
+    /* Error Box */
     .error-message-box {
-  background-color: #ffe6e6;
-  color: #a94442;
-  border: 1px solid #f5c6cb;
-  padding: 15px 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  font-size: 15px;
-  line-height: 1.5;
-}
+      background-color: #ffe6e6;
+      color: #a94442;
+      border: 1px solid #f5c6cb;
+      padding: 15px 20px;
+      border-radius: 8px;
+      margin: 20px auto;
+      font-size: 15px;
+      line-height: 1.5;
+      max-width: 800px;
+    }
 
-.error-message-box p {
-  margin: 0 0 8px 0;
-}
+    .error-message-box p {
+      margin: 0 0 8px 0;
+    }
 
-.error-message-box p:last-child {
-  margin-bottom: 0;
-}
+    .error-message-box p:last-child {
+      margin-bottom: 0;
+    }
 
-
+    /* Background Animasi */
     .animated-bg {
       position: fixed;
       top: 0;
@@ -55,6 +58,7 @@
       100% { background-position: 0% 50%; }
     }
 
+    /* Container */
     .register-container {
       display: flex;
       justify-content: center;
@@ -65,7 +69,7 @@
 
     .register-card {
       display: flex;
-      background: rgba(255, 255, 255, 0.8);
+      background: rgba(255, 255, 255, 0.85);
       backdrop-filter: blur(15px);
       border-radius: 20px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -87,24 +91,24 @@
 
     .left-panel {
       background: url('https://images.unsplash.com/photo-1504384308090-c894fdcc538d') center/cover no-repeat;
-      color: white;
       display: flex;
-      flex-direction: column;
       justify-content: center;
       align-items: center;
+      flex-direction: column;
+      color: white;
     }
 
     .left-panel h2 {
       font-size: 32px;
       font-weight: bold;
       margin-bottom: 20px;
-      text-shadow: 1px 1px 4px rgba(0,0,0,0.4);
+      text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
     }
 
     .left-panel p {
       text-align: center;
       max-width: 300px;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
     }
 
     .right-panel h1 {
@@ -113,6 +117,7 @@
       margin-bottom: 30px;
     }
 
+    /* Form */
     .form-group {
       margin-bottom: 20px;
     }
@@ -123,37 +128,31 @@
       color: #333;
       font-weight: 600;
     }
-    
-    .form-group input {
+
+    .form-group input,
+    .form-group select {
       width: 100%;
       padding: 12px 16px;
       border: 1px solid #ccc;
       border-radius: 10px;
       font-size: 16px;
-      transition: border 0.3s;
+      transition: border-color 0.3s, box-shadow 0.3s;
     }
-    .custom-select {
-  width: 100%;
-  border-radius: 10px;
-  padding: 12px 16px;
-  border: 1px solid #ccc;
-  font-size: 16px;
-  transition: border-color 0.3s, box-shadow 0.3s;
-}
 
-.custom-select:focus {
-  border-color: #4CAF50;
-  box-shadow: 0 0 8px rgba(76, 175, 80, 0.2);
-  outline: none;
-}
-
-
-    .form-group input:focus {
-      outline: none;
+    .form-group input:focus,
+    .form-group select:focus {
       border-color: #4CAF50;
       box-shadow: 0 0 8px rgba(76, 175, 80, 0.2);
+      outline: none;
     }
 
+    .custom-select {
+      appearance: none;
+      background: url("data:image/svg+xml;utf8,<svg fill='gray' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>") no-repeat right 12px center;
+      background-size: 16px;
+    }
+
+    /* Button */
     .register-btn {
       width: 100%;
       padding: 15px;
@@ -190,6 +189,7 @@
       transform: translateY(-2px);
     }
 
+    /* Responsive */
     @media (max-width: 768px) {
       .register-card {
         flex-direction: column;
@@ -198,7 +198,6 @@
       .left-panel {
         height: 200px;
       }
-      
     }
   </style>
 </head>
@@ -211,87 +210,80 @@
       <p>{!! $error !!}</p>
     @endforeach
   </div>
-@endif
-
-
-
+  @endif
 
   <div class="register-container">
     <div class="register-card">
-      <div class="left-panel">
-      </div>
+      <div class="left-panel"></div>
       <div class="right-panel">
         <h1>Formulir Registrasi</h1>
         <form method="POST" action="{{ route('register') }}">
           @csrf
+          
           <div class="form-group">
             <label for="name">Nama Lengkap</label>
             <input type="text" id="name" name="name" required>
           </div>
 
           <div class="form-group">
-  <label for="no_telepon">No. Telepon</label>
-  <input type="text" id="no_telepon" name="no_telepon" required>
-</div>
+            <label for="no_telepon">No. Telepon</label>
+            <input type="text" id="no_telepon" name="no_telepon" required>
+          </div>
 
-<div class="form-group">
-  <label for="alamat">Alamat</label>
-  <input type="text" id="alamat" name="alamat" required>
-</div>
+          <div class="form-group">
+            <label for="alamat">Alamat</label>
+            <select id="alamat" name="alamat" class="custom-select" required>
+              <option value="">-- Pilih Kampung --</option>
+              <option value="Kampung Seuat Masjid">Kampung Seuat Masjid</option>
+              <option value="Kampung Seuat Paniis">Kampung Seuat Pani'is</option>
+              <option value="Kampung Mampang">Kampung Mampang</option>
+              <option value="Kampung Encle">Kampung Encle</option>
+              <option value="Kampung Nyomplong">Kampung Nyomplong</option>
+              <option value="Kampung Seuat Hilir, Pasir Binong">Kampung Seuat Hilir</option>
+              <option value="Kampung Pasir Binong">Kampung Pasir Binong</option>
+              <option value="Kampung Kadu Gundul">Kampung Kadu Gundul</option>
+              <option value="Kampung Sumampir Pulo">Kampung Semampir Pulo</option>
+              <option value="Kampung Sumampir Nangewer">Kampung Sumampir Nangewer</option>
+              <option value="Kampung Sumampir Masjid">Kampung Sumampir Masjid</option>
+            </select>
+          </div>
 
-<div class="form-group">
-  <label for="jenis_kelamin">Jenis Kelamin</label>
-  <select id="jenis_kelamin" name="jenis_kelamin" class="custom-select" required>
-    <option value="" disabled selected>-- Pilih Jenis Kelamin --</option>
-    <option value="laki-laki">Laki-laki</option>
-    <option value="perempuan">Perempuan</option>
-  </select>
-</div>
-
+          <div class="form-group">
+            <label for="jenis_kelamin">Jenis Kelamin</label>
+            <select id="jenis_kelamin" name="jenis_kelamin" class="custom-select" required>
+              <option value="" disabled selected>-- Pilih Jenis Kelamin --</option>
+              <option value="laki-laki">Laki-laki</option>
+              <option value="perempuan">Perempuan</option>
+            </select>
+          </div>
 
           <div class="form-group">
             <label for="email">Alamat Email</label>
             <input type="email" id="email" name="email" required>
           </div>
 
-         <!-- Tambahkan di <head> jika belum ada Font Awesome -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+          <!-- Font Awesome -->
+          <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
 
-<!-- Input Kata Sandi -->
-<div class="form-group">
-  <label for="password">Kata Sandi</label>
-  <div style="position: relative;">
-    <input type="password" id="password" name="password" class="form-control" required style="padding-right: 40px;">
-    <span onclick="togglePassword('password', 'toggleEye')" style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); cursor: pointer;">
-      <i class="fas fa-eye" id="toggleEye"></i>
-    </span>
-  </div>
-</div>
+          <div class="form-group">
+            <label for="password">Kata Sandi</label>
+            <div style="position: relative;">
+              <input type="password" id="password" name="password" required style="padding-right: 40px;">
+              <span onclick="togglePassword('password', 'toggleEye')" style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); cursor: pointer;">
+                <i class="fas fa-eye" id="toggleEye"></i>
+              </span>
+            </div>
+          </div>
 
-<!-- Input Konfirmasi Kata Sandi -->
-<div class="form-group">
-  <label for="password_confirmation">Konfirmasi Sandi</label>
-  <div style="position: relative;">
-    <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" required style="padding-right: 40px;">
-    <span onclick="togglePassword('password_confirmation', 'toggleEyeConfirm')" style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); cursor: pointer;">
-      <i class="fas fa-eye" id="toggleEyeConfirm"></i>
-    </span>
-  </div>
-</div>
-
-<!-- Script toggle -->
-<script>
-  function togglePassword(inputId, iconId) {
-    const input = document.getElementById(inputId);
-    const icon = document.getElementById(iconId);
-    const isPassword = input.getAttribute('type') === 'password';
-
-    input.setAttribute('type', isPassword ? 'text' : 'password');
-    icon.classList.toggle('fa-eye');
-    icon.classList.toggle('fa-eye-slash');
-  }
-</script>
-
+          <div class="form-group">
+            <label for="password_confirmation">Konfirmasi Sandi</label>
+            <div style="position: relative;">
+              <input type="password" id="password_confirmation" name="password_confirmation" required style="padding-right: 40px;">
+              <span onclick="togglePassword('password_confirmation', 'toggleEyeConfirm')" style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); cursor: pointer;">
+                <i class="fas fa-eye" id="toggleEyeConfirm"></i>
+              </span>
+            </div>
+          </div>
 
           <button type="submit" class="register-btn">
             ✨ Daftar Sekarang
@@ -300,5 +292,17 @@
       </div>
     </div>
   </div>
+
+  <script>
+    function togglePassword(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon = document.getElementById(iconId);
+      const isPassword = input.getAttribute('type') === 'password';
+
+      input.setAttribute('type', isPassword ? 'text' : 'password');
+      icon.classList.toggle('fa-eye');
+      icon.classList.toggle('fa-eye-slash');
+    }
+  </script>
 </body>
 </html>

@@ -114,7 +114,6 @@
             <th>No Telepon</th>
             <th>Nama Aset</th>
             <th>Jumlah</th>
-           
             <th>Tanggal Kembali</th>
         </tr>
     </thead>
@@ -126,8 +125,7 @@
             <td>{{ $data->peminjaman->user->no_telepon ?? '-' }}</td>
             <td>{{ $data->peminjaman->asset->nama_asset ?? '-' }}</td>
             <td>{{ $data->peminjaman->jumlah_pinjam ?? '-' }}</td>
-            
-            <td>{{ \Carbon\Carbon::parse($data->tanggal_kembali)->format('d-m-Y') }}</td>
+            <td>{{ \Carbon\Carbon::parse($data->tanggal_pengembalian)->format('d-m-Y') }}</td>
         </tr>
         @endforeach
     </tbody>
@@ -144,21 +142,34 @@
             <th>Nama Aset</th>
             <th>Jumlah Denda</th>
             <th>Tanggal Pengembalian</th>
-            <th>Bukti Pembayaran</th>
+            <th>Status</th>
         </tr>
     </thead>
     <tbody>
-        @foreach($pengembalian as $data)
-            @if($data->denda > 0)
-                <tr>
-                    <td>{{ $data->peminjaman->user->name ?? '-' }}</td>
-                    <td>{{ $data->peminjaman->asset->nama_asset ?? '-' }}</td>
-                    <td>Rp {{ number_format($data->denda ?? 0, 0, ',', '.') }}</td>
-                    <td>{{ \Carbon\Carbon::parse($data->tanggal_pengembalian)->format('d-m-Y') }}</td>
-                    <td>{{ $data->bukti_pembayaran ?? 'Belum Upload' }}</td>
-                </tr>
-            @endif
-        @endforeach
+        @forelse($denda as $item)
+        <tr>
+            <td>{{ $item->pengembalian->peminjaman->user->name ?? '-' }}</td>
+            <td>{{ $item->pengembalian->peminjaman->asset->nama_asset ?? '-' }}</td>
+            <td>Rp {{ number_format($item->jumlah_dibayar ?? 0, 0, ',', '.') }}</td>
+            <td>{{ \Carbon\Carbon::parse($item->pengembalian->tanggal_pengembalian)->format('d-m-Y') }}</td>
+            <td>
+                @php
+                    $status = $item->status_otomatis ?? ucfirst($item->status);
+                @endphp
+                @if($status === 'Lunas')
+                    <span style="color: green;">{{ $status }}</span>
+                @elseif($status === 'Belum Lunas')
+                    <span style="color: red;">{{ $status }}</span>
+                @else
+                    <span style="color: orange;">{{ $status }}</span>
+                @endif
+            </td>
+        </tr>
+        @empty
+        <tr>
+            <td colspan="5" style="text-align: center;">Tidak ada data denda.</td>
+        </tr>
+        @endforelse
     </tbody>
 </table>
 @endif

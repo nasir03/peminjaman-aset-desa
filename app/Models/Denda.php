@@ -15,6 +15,7 @@ class Denda extends Model
         'tanggal_bayar',
         'keterangan',
         'foto_pembayaran',
+          'status'
     ];
 
     public $timestamps = true;

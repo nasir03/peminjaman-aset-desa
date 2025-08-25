@@ -39,33 +39,37 @@
                             <input type="hidden" name="id_user" value="{{ Auth::id() }}">
                         </div>
 
-                        <div class="form-group">
+                    <!--    <div class="form-group">
                             <label for="no_telepon">No. Telepon</label>
                             <input type="text" name="no_telepon" class="form-control" required>
-                        </div>
+                        </div>  -->
 
                         <div class="form-group">
                             <label for="id_asset">Nama Aset</label>
-                            <select name="id_asset" class="form-control" required>
+                            <select name="id_asset" id="id_asset" class="form-control" required>
                                 <option value="">-- Pilih Aset --</option>
                                 @foreach($assets as $asset)
-                                    <option value="{{ $asset->id_asset }}">{{ $asset->nama_asset }}</option>
+                                    @if($asset->sisa > 0)
+                                        <option value="{{ $asset->id_asset }}" data-sisa="{{ $asset->sisa }}">
+                                            {{ $asset->nama_asset }} (Tersisa: {{ $asset->sisa }})
+                                        </option>
+                                    @endif
                                 @endforeach
                             </select>
                         </div>
 
-                        <div class="form-group">
+                     <!--   <div class="form-group">
                             <label for="jenis_kelamin">Jenis Kelamin</label>
                             <select name="jenis_kelamin" class="form-control" required>
                                 <option value="">-- Pilih Jenis Kelamin --</option>
                                 <option value="laki-laki">Laki-laki</option>
                                 <option value="perempuan">Perempuan</option>
                             </select>
-                        </div>
+                        </div> -->
 
                         <div class="form-group">
                             <label for="jumlah_pinjam">Jumlah yang Dipinjam</label>
-                            <input type="number" name="jumlah_pinjam" class="form-control" min="1" required>
+                            <input type="number" name="jumlah_pinjam" id="jumlah_pinjam" class="form-control" min="1" required>
                         </div>
                     </div>
 
@@ -81,10 +85,10 @@
                             <input type="date" name="tanggal_kembali" class="form-control" required>
                         </div>
 
-                        <div class="form-group">
+                    <!--   <div class="form-group">
                             <label for="alamat">Alamat Lengkap (RT/RW)</label>
                             <textarea name="alamat" class="form-control" rows="2" required></textarea>
-                        </div>
+                        </div> -->
 
                         <div class="form-group">
                             <label for="keperluan_peminjaman">Keperluan Peminjaman</label>
@@ -107,4 +111,17 @@
         </div>
     </div>
 </div>
+
+<!-- Script untuk batasi jumlah sesuai sisa stok -->
+<script>
+    const selectAsset = document.getElementById('id_asset');
+    const jumlahPinjam = document.getElementById('jumlah_pinjam');
+
+    selectAsset.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const sisa = selectedOption.getAttribute('data-sisa');
+        jumlahPinjam.max = sisa;
+        jumlahPinjam.value = sisa > 0 ? 1 : 0;
+    });
+</script>
 @endsection

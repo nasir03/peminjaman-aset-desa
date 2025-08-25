@@ -119,7 +119,6 @@
                             <th>No Telepon</th>
                             <th>Nama Aset</th>
                             <th>Jumlah Pinjam</th>
-                          
                             <th>Tanggal Kembali</th>
                         </tr>
                     </thead>
@@ -131,11 +130,10 @@
                                 <td>{{ $data->peminjaman->user->no_telepon ?? '-' }}</td>
                                 <td>{{ $data->peminjaman->asset->nama_asset ?? '-' }}</td>
                                 <td>{{ $data->peminjaman->jumlah_pinjam ?? '-' }}</td>
-                                
                                 <td>{{ \Carbon\Carbon::parse($data->tanggal_pengembalian)->format('d-m-Y') }}</td>
                             </tr>
                         @empty
-                            <tr><td colspan="8" class="text-center">Tidak ada data pengembalian.</td></tr>
+                            <tr><td colspan="6" class="text-center">Tidak ada data pengembalian.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -144,42 +142,51 @@
     </div>
     @endif
 
-   {{-- Data Denda --}}
-@if(!$jenis || $jenis === 'denda')
-<div class="card mb-5">
-    <div class="card-header bg-danger text-white">Data Denda</div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <th>Nama Peminjam</th>
-                        <th>Nama Aset</th>
-                        <th>Jumlah Denda</th>
-                        <th>Tanggal Pengembalian</th>
-                       
-                    </tr>
-                </thead>
-                <tbody>
-                   @foreach($pengembalian as $data)
-    @if($data->denda) {{-- Jika relasi denda ada --}}
-        <tr>
-            <td>{{ $data->peminjaman->user->name ?? '-' }}</td>
-            <td>{{ $data->peminjaman->asset->nama_asset ?? '-' }}</td>
-           <td>Rp {{ number_format($data->denda ?? 0, 0, ',', '.') }}</td>
-            <td>{{ \Carbon\Carbon::parse($data->tanggal_pengembalian)->format('d-m-Y') }}</td>
-           
-        </tr>
-    @endif
-@endforeach
-
-                </tbody>
-            </table>
+    {{-- Data Denda --}}
+    @if(!$jenis || $jenis === 'denda')
+    <div class="card mb-5">
+        <div class="card-header bg-danger text-white">Data Denda</div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Nama Peminjam</th>
+                            <th>Nama Aset</th>
+                            <th>Jumlah Denda</th>
+                            <th>Tanggal Pengembalian</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($denda as $item)
+                            <tr>
+                                <td>{{ $item->pengembalian->peminjaman->user->name ?? '-' }}</td>
+                                <td>{{ $item->pengembalian->peminjaman->asset->nama_asset ?? '-' }}</td>
+                                <td>Rp {{ number_format($item->jumlah_dibayar ?? 0, 0, ',', '.') }}</td>
+                                <td>{{ \Carbon\Carbon::parse($item->pengembalian->tanggal_pengembalian)->format('d-m-Y') }}</td>
+                                <td>
+                                    @php
+                                        $status = $item->status_otomatis ?? ucfirst($item->status);
+                                    @endphp
+                                    @if($status === 'Lunas')
+                                        <span class="badge bg-success">{{ $status }}</span>
+                                    @elseif($status === 'Belum Lunas')
+                                        <span class="badge bg-danger">{{ $status }}</span>
+                                    @else
+                                        <span class="badge bg-warning text-dark">{{ $status }}</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="5" class="text-center">Tidak ada data denda.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-</div>
-@endif
-
+    @endif
 
 </div>
 @endsection

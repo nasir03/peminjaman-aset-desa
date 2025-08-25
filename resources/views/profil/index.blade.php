@@ -4,52 +4,99 @@
 <style>
     .container {
         max-width: 1000px;
-        margin: 40px auto;
-        background: #fff;
-        border-radius: 20px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        padding: 40px;
+        margin: 50px auto;
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        padding: 40px 50px;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
-    h2 {
+    h2, h3 {
         text-align: center;
-        color: #2b3e66;
-        margin-bottom: 30px;
+        color: #2c3e50;
         font-weight: 700;
-        border-bottom: 2px solid #dee2f1;
-        padding-bottom: 10px;
+        margin-bottom: 25px;
+        position: relative;
+    }
+
+    h2::after, h3::after {
+        content: '';
+        display: block;
+        width: 60px;
+        height: 3px;
+        background: #3498db;
+        margin: 10px auto 0;
+        border-radius: 3px;
+    }
+
+    .alert-success, .alert-danger {
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        text-align: center;
+        font-weight: 600;
     }
 
     .alert-success {
-        background-color: #e0f8e9;
-        border: 1px solid #b2e2c8;
-        color: #2e7d32;
-        border-radius: 10px;
-        padding: 15px;
-        margin-bottom: 25px;
-        text-align: center;
+        background-color: #eafaf1;
+        color: #27ae60;
+        border: 1px solid #a2d5c6;
     }
 
     .alert-danger {
         background-color: #fdecea;
-        border: 1px solid #f5c6cb;
-        color: #c0392b;
-        border-radius: 10px;
-        padding: 15px;
-        margin-top: 20px;
-        text-align: center;
+        color: #e74c3c;
+        border: 1px solid #f5b7b1;
     }
 
     .profile-wrapper {
         display: flex;
         gap: 40px;
-        justify-content: space-between;
         flex-wrap: wrap;
+        justify-content: space-between;
     }
 
     .form-section {
         flex: 1 1 60%;
+    }
+
+    .photo-section {
+        flex: 1 1 30%;
+        text-align: center;
+    }
+
+    .photo-box {
+        width: 200px;
+        height: 200px;
+        margin: 0 auto 15px;
+        border-radius: 50%;
+        border: 4px solid #3498db;
+        overflow: hidden;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        background-color: #f8f9fa;
+    }
+
+    .photo-box img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .btn-delete {
+        background-color: #e74c3c;
+        border: none;
+        color: #fff;
+        padding: 10px 18px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: 0.3s ease;
+    }
+
+    .btn-delete:hover {
+        background-color: #c0392b;
+        transform: scale(1.05);
     }
 
     .form-row {
@@ -71,7 +118,7 @@
         font-weight: 600;
         margin-bottom: 6px;
         display: block;
-        color: #333;
+        color: #34495e;
     }
 
     input[type="text"],
@@ -83,93 +130,53 @@
         width: 100%;
         padding: 12px 15px;
         border-radius: 10px;
-        border: 1px solid #ccd6dd;
-        background-color: #fdfdff;
+        border: 1px solid #dcdfe6;
+        background-color: #fafafa;
         font-size: 15px;
+        transition: 0.3s ease;
     }
 
     input:focus,
     textarea:focus,
     select:focus {
-        border-color: #4a90e2;
-        box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.2);
+        border-color: #3498db;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
         outline: none;
-    }
-
-    .photo-section {
-        flex: 1 1 30%;
-        text-align: center;
-    }
-
-    .photo-box {
-        width: 200px;
-        height: 200px;
-        margin: 0 auto 15px;
-        border: 3px solid #4a90e2;
-        border-radius: 50%;
-        overflow: hidden;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: #f9f9f9;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-        position: relative;
-    }
-
-    .photo-box img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .btn-delete {
-        background-color: #e74c3c;
-        border: none;
-        color: white;
-        padding: 8px 15px;
-        border-radius: 8px;
-        font-size: 14px;
-        margin-top: 10px;
-        cursor: pointer;
-        transition: 0.3s;
-    }
-
-    .btn-delete:hover {
-        background-color: #c0392b;
-        transform: scale(1.05);
     }
 
     .file-info {
         font-size: 13px;
-        color: #777;
+        color: #7f8c8d;
         margin-top: 5px;
     }
 
     .btn-primary {
-        background-color: #4a90e2;
+        background-color: #3498db;
         border: none;
         padding: 12px 25px;
         font-weight: bold;
         font-size: 16px;
         border-radius: 10px;
         color: #fff;
-        box-shadow: 0 6px 15px rgba(74, 144, 226, 0.3);
+        box-shadow: 0 6px 15px rgba(52, 152, 219, 0.3);
         transition: 0.3s ease;
+        margin-top: 15px;
     }
 
     .btn-primary:hover {
-        background-color: #3b7cc4;
-        box-shadow: 0 8px 20px rgba(74, 144, 226, 0.5);
+        background-color: #2980b9;
+        box-shadow: 0 8px 25px rgba(52, 152, 219, 0.4);
         transform: translateY(-2px);
+    }
+
+    hr {
+        border: none;
+        border-top: 1px solid #ecf0f1;
+        margin: 40px 0;
     }
 
     @media (max-width: 768px) {
         .profile-wrapper {
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .form-row {
             flex-direction: column;
         }
 
@@ -195,7 +202,6 @@
 
     <div class="profile-wrapper">
         <div class="form-section">
-            {{-- Form Profil --}}
             <form action="{{ route('profil.update') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="form-row">
@@ -244,9 +250,8 @@
                 <button type="submit" class="btn btn-primary">💾 Simpan Perubahan</button>
             </form>
 
-            {{-- Form Ubah Password --}}
-            <hr style="margin: 30px 0; border-color: #ccc;">
-            <h3 style="margin-bottom: 20px; color: #2b3e66;">Ubah Kata Sandi</h3>
+            <hr>
+            <h3>Ubah Kata Sandi</h3>
 
             <form action="{{ route('profil.updatePassword') }}" method="POST">
                 @csrf

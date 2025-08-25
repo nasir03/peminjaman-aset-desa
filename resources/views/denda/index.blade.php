@@ -8,6 +8,10 @@
             <div class="alert alert-success">
                 <i class="fas fa-check-circle"></i> {{ session('success') }}
             </div>
+        @elseif (session('error'))
+            <div class="alert alert-danger">
+                <i class="fas fa-times-circle"></i> {{ session('error') }}
+            </div>
         @endif
 
         <div class="card shadow mb-4">
@@ -23,8 +27,10 @@
                                 <th>Metode Pembayaran</th>
                                 <th>Tanggal Bayar</th>
                                 <th>Bukti Pembayaran</th>
-                                <th>Keterangan</th>
-                                <th>Aksi</th>
+                                <th>Status</th>
+                                @if (Auth::user()->role === 'admin')
+                                    <th>Aksi</th>
+                                @endif
                             </tr>
                         </thead>
 
@@ -41,11 +47,15 @@
                                     <tr class="text-center align-middle">
                                         <td>{{ $user->name }}</td>
                                         <td>{{ $asset->nama_asset }}</td>
-                                        <td>{{ $pengembalian->tanggal_pengembalian ? \Carbon\Carbon::parse($pengembalian->tanggal_pengembalian)->format('d M Y') : '-' }}
+                                        <td>
+                                            {{ $pengembalian->tanggal_pengembalian
+                                                ? \Carbon\Carbon::parse($pengembalian->tanggal_pengembalian)->format('d M Y')
+                                                : '-' }}
                                         </td>
                                         <td>Rp {{ number_format($item->jumlah_dibayar, 0, ',', '.') }}</td>
                                         <td>{{ $item->metode_pembayaran }}</td>
-                                        <td>{{ $item->tanggal_bayar ? \Carbon\Carbon::parse($item->tanggal_bayar)->format('d M Y') : '-' }}
+                                        <td>
+                                            {{ $item->tanggal_bayar ? \Carbon\Carbon::parse($item->tanggal_bayar)->format('d M Y') : '-' }}
                                         </td>
                                         <td>
                                             @php
@@ -71,23 +81,44 @@
                                                 <span class="text-muted">Tidak tersedia</span>
                                             @endif
                                         </td>
-                                        <td>{{ $item->keterangan ?? '-' }}</td>
                                         <td>
-                                            <form action="{{ route('pembayaran_denda.destroy', $item->id) }}"
-                                                method="POST"
-                                                onsubmit="return confirm('Yakin ingin menghapus data ini?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-danger">
-                                                    <i class="fas fa-trash-alt"></i> Hapus
-                                                </button>
-                                            </form>
+                                            @if ($item->status == 'pending')
+                                                @if (Auth::user()->role === 'admin')
+                                                    <a href="{{ route('denda.setujui', $item->id) }}"
+                                                        class="btn btn-success btn-sm">Setujui</a>
+                                                    <a href="{{ route('denda.tolak', $item->id) }}"
+                                                        class="btn btn-warning btn-sm">Tolak</a>
+                                                @else
+                                                   <span class="badge bg-warning text-dark">Menunggu Verifikasi</span>
+                                                @endif
+                                            @elseif($item->status == 'lunas')
+                                                <span class="badge bg-success">Lunas</span>
+                                            @elseif($item->status == 'belum_lunas')
+                                                <span class="badge bg-danger">Belum Lunas</span>
+                                            @endif
                                         </td>
+
+                                        @if (Auth::user()->role === 'admin')
+                                            <td>
+                                                <form action="{{ route('pembayaran_denda.destroy', $item->id) }}"
+                                                    method="POST"
+                                                    onsubmit="return confirm('Yakin ingin menghapus data ini?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm btn-danger">
+                                                        <i class="fas fa-trash-alt"></i> Hapus
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        @endif
                                     </tr>
                                 @endif
                             @empty
                                 <tr>
-                                    <td colspan="9" class="text-center text-muted">Belum ada data pembayaran denda.</td>
+                                    <td colspan="{{ Auth::user()->role === 'admin' ? 9 : 8 }}"
+                                        class="text-center text-muted">
+                                        Belum ada data pembayaran denda.
+                                    </td>
                                 </tr>
                             @endforelse
                         </tbody>

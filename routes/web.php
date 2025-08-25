@@ -17,7 +17,6 @@ use App\Mail\TelatEmail;
 use App\Mail\PengingatEmail;
 use App\Models\Peminjaman;
 
-
 Route::get('/', function () {
     return view('home');
 });
@@ -34,22 +33,21 @@ Route::post('/register', [AuthController::class, 'register'])->name('register.st
 // Route::get('/tes-email-terlambat', function () {
 //    $user = (object)[
 //        'name' => 'Nasir',
- //       'email' => 'emailtujuanmu@gmail.com', // ← ganti dengan email kamu
-  //  ];
+//       'email' => 'emailtujuanmu@gmail.com', // ← ganti dengan email kamu
+//  ];
 
-  //  $peminjaman = (object)[
-   //         'user' => $user,
-     //       'aset' => (object)['nama_asset' => 'Proyektor Epson'],
-       //     'tanggal_kembali' => now()->addDay()->toDateString()
-       // ];
+//  $peminjaman = (object)[
+//         'user' => $user,
+//       'aset' => (object)['nama_asset' => 'Proyektor Epson'],
+//     'tanggal_kembali' => now()->addDay()->toDateString()
+// ];
 
-    //    $pesan = 'Ini adalah email percobaan untuk notifikasi keterlambatan atau pengingat.';
+//    $pesan = 'Ini adalah email percobaan untuk notifikasi keterlambatan atau pengingat.';
 
- //   Mail::to($user->email)->send(new TelatEmail($peminjaman));
-  //  Mail::to($user->email)->send(new PengingatEmail($peminjaman));
-  //      return '✅ Email tes sudah dikirim ke: ' . $user->email;
-  //  });
-
+//   Mail::to($user->email)->send(new TelatEmail($peminjaman));
+//  Mail::to($user->email)->send(new PengingatEmail($peminjaman));
+//      return '✅ Email tes sudah dikirim ke: ' . $user->email;
+//  });
 
 // ==================== HANYA BISA DIAKSES SETELAH LOGIN ====================
 Route::middleware(['auth'])->group(function () {
@@ -89,6 +87,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/denda/{id_pengembalian}/bayar', [DendaController::class, 'form'])->name('denda.form');
     Route::post('/denda/{id_pengembalian}/bayar', [DendaController::class, 'bayar'])->name('denda.bayar');
     Route::delete('/pembayaran_denda/{id}', [DendaController::class, 'destroy'])->name('pembayaran_denda.destroy');
+    Route::get('/denda/setujui/{id}', [DendaController::class, 'setujui'])->name('denda.setujui');
+Route::get('/denda/tolak/{id}', [DendaController::class, 'tolak'])->name('denda.tolak');
+
 
     // LAPORAN
     Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.cetak');
@@ -106,18 +107,19 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/pesan/baru', [PesanController::class, 'fetchPesanBaru'])->name('pesan.fetch');
     Route::post('/pesan/hapus-semua', [PesanController::class, 'hapusSemua'])->name('pesan.hapusSemua');
 
+    // Jalankan pengingat dan notifikasi keterlambatan (manual / testing)
+    Route::get('/pengingat-dan-terlambat', [NotifikasiController::class, 'pengingatDanTerlambatPengembalian']);
+    Route::get('/cek-notifikasi-baru', [App\Http\Controllers\NotifikasiController::class, 'cekNotifikasiBaru'])->name('cek.notifikasi.baru');
 
-   // Jalankan pengingat dan notifikasi keterlambatan (manual / testing)
-Route::get('/pengingat-dan-terlambat', [NotifikasiController::class, 'pengingatDanTerlambatPengembalian']);
-Route::get('/cek-notifikasi-baru', [App\Http\Controllers\NotifikasiController::class, 'cekNotifikasiBaru'])->name('cek.notifikasi.baru');
+    Route::get('/notifikasi/cek', [NotifikasiController::class, 'cekNotifikasiBaru']);
 
-Route::get('/pesan-count', function() {
-    $count = DB::table('pesans')
-        ->where('penerima_id', Auth::id())
-        ->whereNull('dibaca_pada') // opsional: hanya hitung yang belum dibaca
-        ->count();
-    return response()->json(['count' => $count]);
-})->name('pesan.count');
+    Route::get('/pesan-count', function () {
+        $count = DB::table('pesans')
+            ->where('penerima_id', Auth::id())
+            ->whereNull('dibaca_pada') // opsional: hanya hitung yang belum dibaca
+            ->count();
+        return response()->json(['count' => $count]);
+    })->name('pesan.count');
 
-Route::get('/pesan-count', [PesanController::class, 'count'])->name('pesan.count');
+    Route::get('/pesan-count', [PesanController::class, 'count'])->name('pesan.count');
 });

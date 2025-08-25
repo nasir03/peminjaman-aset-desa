@@ -119,7 +119,9 @@
     <div class="chat-box">
         @forelse($pesans as $pesan)
             <div class="pesan-item {{ $pesan->pengirim_id == Auth::id() ? 'me' : '' }}">
-                <img class="pesan-foto" src="{{ asset($pesan->pengirim->foto ?? 'uploads/default.png') }}" alt="Foto">
+                <img class="pesan-foto" src="{{ $pesan->pengirim->foto 
+                    ? asset('storage/foto_profil/' . $pesan->pengirim->foto) 
+                    : asset('images/default-user.png') }}" alt="Foto">
                 <div class="pesan-isi">
                     <strong>{{ $pesan->pengirim->name }}</strong>
                     <div>{{ $pesan->isi_pesan }}</div>
@@ -130,6 +132,7 @@
             <p class="text-center text-muted">Belum ada pesan.</p>
         @endforelse
     </div>
+
 
     {{-- Tombol Hapus Semua --}}
     <form action="{{ route('pesan.hapusSemua') }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus semua pesan?')">
