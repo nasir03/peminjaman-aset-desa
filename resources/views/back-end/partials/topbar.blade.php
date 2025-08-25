@@ -134,8 +134,9 @@
         @forelse($pesans->take(5) as $pesan)
             <a class="dropdown-item d-flex align-items-center" href="#">
                 <div class="dropdown-list-image mr-3">
-                    <img class="rounded-circle" src="{{ $pesan->pengirim->foto ?? asset('img/default.png') }}"
-                        style="max-width: 60px;" alt="Foto Pengirim">
+                    <img class="rounded-circle" src="{{ $pesan->pengirim->foto 
+                    ? asset('storage/foto_profil/' . $pesan->pengirim->foto) 
+                    : asset('images/default-user.png') }}" alt="Foto"  style="max-width: 60px;">
                     <div class="status-indicator bg-success"></div>
                 </div>
                 <div class="font-weight-bold">
